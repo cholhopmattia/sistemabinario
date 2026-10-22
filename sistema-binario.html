@@ -1,0 +1,994 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Il sistema binario</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0f1f;--panel:#121a33;--panel2:#18223f;--line:#253262;--text:#eef1fb;--muted:#8d98bd;
+  --a:#38d6ff;--b:#ffb547;--c:#7cf29a;--d:#ff6b9a;--mono:'JetBrains Mono',ui-monospace,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif;overflow:hidden}
+body{background:radial-gradient(1200px 700px at 85% -10%,#16244d 0%,transparent 60%),radial-gradient(900px 600px at -10% 110%,#13203f 0%,transparent 60%),var(--bg)}
+button,input{font:inherit;color:inherit}
+.progress{position:fixed;top:0;left:0;height:4px;background:linear-gradient(90deg,var(--a),var(--c));transition:width .5s;z-index:20}
+
+/* slide */
+.deck{position:relative;height:100%;width:100%}
+.slide{position:absolute;inset:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.45fr);gap:clamp(1.2rem,4vw,5rem);align-items:center;align-content:center;align-content:safe center;
+  overflow-y:auto;overflow-x:hidden;padding:6vh max(5vw,calc((100vw - 1600px)/2)) 13vh;
+  opacity:0;transform:translateX(50px);transition:opacity .55s ease,transform .55s ease;pointer-events:none;isolation:isolate}
+.slide.prev{transform:translateX(-50px)}
+.slide.active{opacity:1;transform:none;pointer-events:auto}
+.slide.wide{grid-template-columns:minmax(0,.8fr) minmax(0,1.7fr)}
+
+.num{font:700 .85rem/1 'Space Grotesk';color:var(--muted);letter-spacing:.15em;margin-bottom:.9rem}
+.num b{color:var(--a)}
+h1{font:700 clamp(2.8rem,7vw,6rem)/.95 'Space Grotesk';letter-spacing:-.02em}
+h2{font:700 clamp(2rem,3.8vw,3.4rem)/1.05 'Space Grotesk';letter-spacing:-.01em;margin-bottom:1.6rem}
+h1 span,h2 span{color:var(--a)}
+sub{font-size:.55em;vertical-align:-.25em;color:var(--muted);font-weight:600}
+ul.key{list-style:none;display:grid;gap:.95rem}
+ul.key li{font-size:clamp(1.05rem,1.55vw,1.4rem);line-height:1.3;padding-left:1.6rem;position:relative;opacity:0;transform:translateY(10px);transition:.5s}
+ul.key li::before{content:'';position:absolute;left:0;top:.42em;width:.62rem;height:.62rem;border-radius:3px;background:var(--a);box-shadow:0 0 12px var(--a)}
+ul.key li b{color:var(--b);font-weight:600}
+.slide.active ul.key li{opacity:1;transform:none}
+.slide.active ul.key li:nth-child(1){transition-delay:.25s}
+.slide.active ul.key li:nth-child(2){transition-delay:.4s}
+.slide.active ul.key li:nth-child(3){transition-delay:.55s}
+.slide.active ul.key li:nth-child(4){transition-delay:.7s}
+.slide.active ul.key li:nth-child(5){transition-delay:.85s}
+
+.stage{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:22px;padding:1.1rem;
+  height:clamp(340px,68vh,780px);display:flex;flex-direction:column;gap:.75rem;position:relative;overflow:hidden;box-shadow:0 30px 80px -30px #000}
+.area{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;justify-content:flex-start;align-items:center;gap:1rem;padding:.4rem}
+.controls{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center}
+.spacer{flex:1}
+.btn{background:#1f2b52;border:1px solid #33437c;border-radius:999px;padding:.55rem 1rem;font-weight:600;font-size:.95rem;cursor:pointer;transition:.2s;white-space:nowrap}
+.btn:hover{background:#2a3a6c;border-color:var(--a)}
+.btn.pri{background:var(--a);color:#04202b;border-color:var(--a)}
+.btn.pri:hover{filter:brightness(1.1)}
+.btn:disabled{opacity:.35;cursor:default}
+.btn.on{background:var(--b);border-color:var(--b);color:#2b1a00}
+.inp{background:#0b1328;border:1px solid #33437c;border-radius:999px;padding:.5rem .9rem;font:700 1rem var(--mono);width:9.5rem;outline:none;transition:.2s}
+.inp:focus{border-color:var(--a)}
+.inp.bad{border-color:var(--d);animation:shake .3s}
+@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.cap{font:600 clamp(1rem,1.5vw,1.2rem) 'Space Grotesk';min-height:1.5em}
+.cap b{color:var(--b)}
+.steps{display:flex;gap:.4rem}
+.steps span{flex:1;height:6px;border-radius:9px;background:#24305a;transition:.4s}
+.steps span.on{background:var(--b)}
+.hint{font-size:.85rem;color:var(--muted)}
+
+/* hero */
+.hero{grid-template-columns:1fr}
+.hero .bgcv{position:absolute;inset:0;z-index:-1;pointer-events:none}
+.hero .bgcv canvas{width:100%;height:100%;display:block}
+.hero .sub{font-size:clamp(1.1rem,2vw,1.6rem);color:var(--muted);margin-top:1.4rem;max-width:36ch}
+.chips{display:flex;gap:.6rem;margin-top:2.2rem;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:#121a33cc;border-radius:999px;padding:.45rem 1rem;font-size:.95rem;color:var(--muted)}
+.chip b{color:var(--text)}
+
+/* percorso */
+.path{list-style:none;display:grid;gap:clamp(.4rem,1.4vh,.9rem);width:100%;max-width:560px;counter-reset:p;position:relative}
+.path li{display:flex;align-items:center;gap:1rem;padding:clamp(.55rem,1.4vh,.9rem) 1rem;border-radius:16px;background:#1a2448;border:1px solid var(--line);position:relative;
+  opacity:0;transform:translateX(24px);transition:.5s}
+.slide.active .path li{opacity:1;transform:none}
+.path li .dot{flex:none;width:2.4rem;height:2.4rem;border-radius:50%;display:grid;place-items:center;font:700 1rem 'Space Grotesk';background:#24305a;color:var(--muted)}
+.path li .t{font:600 clamp(1rem,1.6vw,1.25rem) 'Space Grotesk'}
+.path li .s{font-size:.85rem;color:var(--muted)}
+.path li .tag{margin-left:auto;font-size:.75rem;font-weight:700;letter-spacing:.1em;padding:.25rem .6rem;border-radius:999px;white-space:nowrap}
+.path li.done .dot{background:var(--c);color:#06210f}
+.path li.done .tag{color:var(--c);border:1px solid #7cf29a66}
+.path li.now{border-color:var(--b);background:#2a2a3f;box-shadow:0 0 0 1px var(--b),0 0 30px -6px var(--b)}
+.path li.now .dot{background:var(--b);color:#2b1a00;animation:pulse 1.6s infinite}
+.path li.now .tag{background:var(--b);color:#2b1a00}
+.path li.next .tag{color:var(--muted);border:1px solid var(--line)}
+@keyframes pulse{50%{box-shadow:0 0 0 8px #ffb54733}}
+
+/* base 10 */
+.places{display:flex;gap:clamp(.4rem,1.2vw,1rem)}
+.place{display:flex;flex-direction:column;align-items:center;gap:.45rem}
+.place .w{font:700 .8rem var(--mono);color:var(--muted)}
+.place .nm{font-size:.8rem;color:var(--b);font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+.digit{width:clamp(3.4rem,8vw,6rem);height:clamp(4.4rem,11vw,7.6rem);border-radius:16px;background:#0b1328;border:2px solid #33437c;display:grid;place-items:center;
+  font:700 clamp(2.4rem,6vw,4.4rem) var(--mono);color:var(--a);cursor:pointer;user-select:none;transition:.2s}
+.digit:hover{border-color:var(--a);transform:translateY(-3px)}
+.digit.flash{animation:flash .35s}
+@keyframes flash{from{background:#38d6ff33}}
+.decomp{font:700 clamp(.95rem,1.8vw,1.35rem) var(--mono);text-align:center;line-height:1.7}
+.decomp .p{color:var(--a)} .decomp .x{color:var(--muted)} .decomp .r{color:var(--c)}
+
+/* basi */
+.btabs{display:flex;gap:.5rem;flex-wrap:wrap}
+.odo{display:flex;gap:.35rem}
+.odo span{width:clamp(2.6rem,6vw,4.2rem);height:clamp(3.4rem,8vw,5.4rem);border-radius:12px;background:#0b1328;border:2px solid #33437c;display:grid;place-items:center;font:700 clamp(1.8rem,4.4vw,3.2rem) var(--mono);color:var(--c);transition:.15s}
+.odo span.lead{color:#3a4a7c}
+.odo span.tick{border-color:var(--c);transform:translateY(-3px)}
+.eqdec{font:600 clamp(1rem,1.7vw,1.3rem) 'Space Grotesk';color:var(--muted)}
+.eqdec b{font-family:var(--mono);color:var(--text);font-size:1.25em}
+.digset{display:flex;flex-wrap:wrap;gap:.35rem;justify-content:center;max-width:560px}
+.digset span{min-width:2.2rem;padding:.3rem .5rem;border-radius:9px;background:#1f2b52;border:1px solid #33437c;font:700 1rem var(--mono);text-align:center;transition:.2s}
+.digset span.hl{background:var(--c);color:#06210f;border-color:var(--c)}
+.digset span.off{opacity:.18}
+
+/* lampadine */
+.bulbs{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:clamp(.25rem,1vw,.7rem);width:100%;max-width:820px}
+.bulb{display:flex;flex-direction:column;align-items:center;gap:.4rem;cursor:pointer;user-select:none}
+.bulb .wt{font:700 clamp(.8rem,1.4vw,1.05rem) var(--mono);color:var(--muted);transition:.2s}
+.bulb .lamp{width:100%;max-width:74px;aspect-ratio:1;border-radius:50%;background:#1a2448;border:2px solid #33437c;display:grid;place-items:center;font-size:clamp(1.1rem,2.6vw,2rem);transition:.25s;filter:grayscale(1) brightness(.6)}
+.bulb .bit{font:700 clamp(1.3rem,2.6vw,2rem) var(--mono);color:#4a5a8c;transition:.2s}
+.bulb.on .lamp{background:radial-gradient(circle,#ffe7a3,#ffb547 60%,#b06d00);border-color:#ffd27a;box-shadow:0 0 30px #ffb547aa;filter:none}
+.bulb.on .bit{color:var(--b)} .bulb.on .wt{color:var(--b)}
+.bigval{font:700 clamp(2.4rem,6vw,4.4rem)/1 var(--mono);color:var(--c);text-align:center}
+.bigval small{display:block;font:600 .9rem 'Space Grotesk';color:var(--muted);margin-top:.4rem;letter-spacing:.06em}
+.sumline{font:600 clamp(.95rem,1.6vw,1.2rem) var(--mono);color:var(--muted);text-align:center;min-height:1.4em}
+.sumline b{color:var(--b)}
+
+/* bin -> dec */
+.tbl{display:grid;gap:.5rem .4rem;align-items:center;justify-items:center}
+.tbl .lbl{justify-self:end;font-size:.78rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em;padding-right:.5rem;text-align:right;transition:.4s}
+.cell{width:clamp(2.4rem,5.4vw,4rem);height:clamp(2.6rem,5.6vw,4rem);border-radius:12px;display:grid;place-items:center;font:700 clamp(1rem,2.2vw,1.7rem) var(--mono);transition:.45s}
+.cell.bitc{background:#0b1328;border:2px solid #33437c;color:var(--a);font-size:clamp(1.4rem,3vw,2.3rem)}
+.cell.wc{color:var(--muted);border:1px dashed #33437c}
+.cell.pc{border:2px solid transparent}
+.cell.pc.one{background:#ffb5471f;border-color:var(--b);color:var(--b)}
+.cell.pc.zero{color:#3a4a7c;text-decoration:line-through}
+.cell.hide,.lbl.hide{opacity:0;transform:translateY(10px)}
+.result{font:700 clamp(1.1rem,2.4vw,1.9rem) var(--mono);text-align:center;transition:.5s;line-height:1.4}
+.result .eq{color:var(--c);font-size:1.15em}
+.result.hide{opacity:0;transform:translateY(10px)}
+
+/* dec -> bin */
+.divwrap{display:flex;gap:clamp(.8rem,3vw,2.5rem);align-items:stretch;justify-content:center}
+.divs{display:grid;grid-template-columns:auto auto auto auto;gap:.35rem .8rem;align-items:center;font:700 clamp(.95rem,1.9vw,1.45rem) var(--mono)}
+.divs .r{opacity:0;transform:translateY(8px);transition:.4s}
+.divs .r.show{opacity:1;transform:none}
+.divs .n{text-align:right;color:var(--text)}
+.divs .op{color:var(--muted)}
+.divs .q{color:var(--a)}
+.divs .rem{padding:.15rem .6rem;border-radius:9px;border:2px solid var(--b);color:var(--b);background:#ffb5471a;text-align:center}
+.divs .rem::before{content:'resto ';font:600 .7em Inter;color:var(--muted)}
+.arrowup{width:34px;position:relative;opacity:0;transition:.5s}
+.arrowup.show{opacity:1}
+.arrowup::before{content:'';position:absolute;left:50%;top:10px;bottom:4px;width:4px;margin-left:-2px;border-radius:4px;background:linear-gradient(0deg,var(--c),#7cf29a33)}
+.arrowup::after{content:'';position:absolute;left:50%;top:0;margin-left:-10px;border:10px solid transparent;border-bottom:14px solid var(--c);border-top:0}
+.arrowup span{position:absolute;left:100%;top:50%;transform:translateY(-50%);writing-mode:vertical-rl;rotate:180deg;font-size:.75rem;color:var(--c);font-weight:700;letter-spacing:.08em;white-space:nowrap;margin-left:4px}
+
+/* cerchio */
+.circle-wrap{display:grid;place-items:center;height:100%}
+.circle{width:min(100%,72vh,760px);aspect-ratio:1;border-radius:50%;border:5px solid var(--a);box-shadow:0 0 60px -10px #38d6ff66,inset 0 0 60px -20px #38d6ff44;transform:scale(.85);opacity:0;transition:.8s cubic-bezier(.3,1.3,.5,1)}
+.slide.active .circle{transform:none;opacity:1}
+[contenteditable]{outline:none;border-radius:8px;transition:background .2s}
+[contenteditable]:hover{background:#ffffff08}
+[contenteditable]:focus{background:#ffffff10;box-shadow:0 0 0 2px #38d6ff55}
+
+/* esercizi */
+.extabs{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center}
+.score{font:600 .95rem 'Space Grotesk';color:var(--muted)}
+.score b{color:var(--c)}
+.exgrid{flex:1;min-height:0;overflow-y:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:.7rem;align-content:start;padding:2px 4px 2px 2px}
+.ex{background:#1a2448;border:1px solid var(--line);border-radius:16px;padding:.8rem .9rem;display:flex;flex-direction:column;gap:.55rem;transition:.3s}
+.ex .q{font:700 clamp(1.1rem,1.8vw,1.4rem) var(--mono);display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+.ex .q .k{font:700 .75rem 'Space Grotesk';color:var(--muted);letter-spacing:.1em}
+.ex .row{display:flex;gap:.4rem;align-items:center}
+.ex .inp{flex:1;width:auto;min-width:0;padding:.42rem .75rem}
+.ex .btn{padding:.42rem .75rem;font-size:.85rem}
+.ex .fb{font-size:.88rem;font-weight:600;min-height:1.2em;color:var(--muted)}
+.ex.ok{border-color:var(--c);background:#16304a}
+.ex.ok .fb{color:var(--c)}
+.ex.ko{border-color:var(--d)}
+.ex.ko .fb{color:var(--d)}
+.ex .sol{font:600 .85rem var(--mono);color:var(--b)}
+.exgrid::-webkit-scrollbar,.area::-webkit-scrollbar,.slide::-webkit-scrollbar{width:8px}
+.exgrid::-webkit-scrollbar-thumb,.area::-webkit-scrollbar-thumb,.slide::-webkit-scrollbar-thumb{background:#33437c;border-radius:8px}
+
+/* nav */
+.nav{position:fixed;left:50%;bottom:2.2vh;transform:translateX(-50%);display:flex;align-items:center;gap:.6rem;background:#0f1630e6;border:1px solid var(--line);
+  border-radius:999px;padding:.4rem .5rem;backdrop-filter:blur(10px);z-index:30}
+.nav .arr{width:42px;height:42px;border-radius:50%;border:none;background:#1f2b52;cursor:pointer;font-size:1.1rem;display:grid;place-items:center}
+.nav .arr:hover{background:var(--a);color:#04202b}
+.dots{display:flex;gap:.45rem;padding:0 .3rem}
+.dots button{width:10px;height:10px;border-radius:9px;border:none;background:#34437a;cursor:pointer;transition:.3s;padding:0}
+.dots button.on{width:28px;background:var(--a)}
+.count{font:600 .85rem 'Space Grotesk';color:var(--muted);min-width:3.2em;text-align:center}
+
+/* schermi bassi */
+@media (min-width:901px) and (max-height:720px){
+  .slide{padding-top:4vh;padding-bottom:11vh}
+  h2{font-size:clamp(1.7rem,3.2vw,2.6rem);margin-bottom:1rem}
+  ul.key{gap:.6rem}
+  ul.key li{font-size:clamp(.95rem,1.35vw,1.15rem)}
+  .stage{padding:.8rem;gap:.55rem}
+  .btn{padding:.4rem .8rem;font-size:.85rem}
+  .nav .arr{width:36px;height:36px}
+  .path li .s{display:none}
+}
+/* telefoni, tablet verticali, schermi molto bassi */
+@media (max-width:900px),(max-height:520px){
+  .slide,.slide.wide{display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start;gap:1.2rem;padding:clamp(1rem,4vh,2.5rem) 16px 84px}
+  .slide>*{flex-shrink:0}
+  .hero{justify-content:center}
+  h2{font-size:clamp(1.7rem,7vw,2.6rem);margin-bottom:.9rem}
+  ul.key{gap:.55rem}
+  ul.key li{font-size:1rem}
+  .stage{height:auto;padding:.8rem;gap:.6rem;border-radius:18px}
+  .area{flex:none;overflow:visible;min-height:260px}
+  .exgrid{flex:none;overflow:visible}
+  .circle-wrap{height:auto}
+  .circle{width:min(88vw,58vh)}
+  .btn{padding:.45rem .85rem;font-size:.88rem}
+  .dots{display:none}
+  .nav{bottom:10px;left:auto;right:10px;transform:none;gap:.35rem;padding:.3rem}
+  .nav .arr{width:38px;height:38px}
+}
+@media (max-width:520px){
+  .bulbs{grid-template-columns:repeat(4,minmax(0,1fr));row-gap:1rem}
+  .divs{gap:.3rem .45rem}
+  .divs .rem::before{content:''}
+  .tbl{gap:.4rem .25rem}
+  .tbl .lbl{font-size:.58rem;padding-right:.2rem;letter-spacing:0}
+  .cell{width:2.1rem;height:2.4rem;border-radius:9px}
+  .cell.bitc{font-size:1.3rem}
+  .path li .s{display:none}
+}
+
+/* ===== v2 ===== */
+.area>:first-child{margin-top:auto}
+.area>:last-child{margin-bottom:auto}
+.paren{color:var(--muted);font-weight:500}
+/* celle generiche (anche a due righe) */
+.cell{width:auto;min-width:clamp(2.2rem,min(5.4vw,7vh),4rem);height:clamp(2.2rem,min(5.6vw,7vh),4rem);padding:0 .35rem}
+.cell.bitc{font-size:clamp(1.2rem,min(3vw,4.4vh),2.3rem)}
+.tbl{gap:clamp(.25rem,1vh,.5rem) .4rem}
+.result{font-size:clamp(1rem,min(2.4vw,3.6vh),1.9rem)}
+.cell.two{flex-direction:column;display:flex;justify-content:center;align-items:center;height:clamp(2.6rem,min(6.4vw,8.2vh),4.6rem);line-height:1.05;gap:.15rem}
+.cell .pw{font:600 clamp(.7rem,1.2vw,.9rem) var(--mono);color:var(--muted)}
+.cell .pw .fb{color:var(--b)} .cell .pw .fi{color:var(--c)}
+.cell .pv{font:700 clamp(.9rem,min(2vw,3vh),1.5rem) var(--mono)}
+.cell.ix{color:var(--c);border:1px solid #7cf29a55;border-radius:999px;height:auto;min-width:0;padding:.15rem .6rem;font-size:clamp(.8rem,1.4vw,1rem)}
+.cell.pc.one .pv{color:var(--b)}
+.cell.pc.zero .pv{color:#3a4a7c;text-decoration:line-through}
+.cell.pc.zero .pw{opacity:.5}
+.tabsmall{display:flex;gap:.4rem;flex-wrap:wrap}
+
+/* formula */
+.formula{font:700 clamp(1.15rem,2.4vw,1.9rem) 'Space Grotesk';text-align:center;padding:.6rem 1rem;border-radius:14px;background:#0b1328;border:1px dashed #33437c}
+.formula sup{font-size:.62em}
+.fc{color:var(--a)} .fb{color:var(--b)} .fi{color:var(--c)}
+
+/* posizionale vs non */
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:1rem;width:100%}
+.sys{background:#0f1630;border:1px solid var(--line);border-radius:16px;padding:1rem .8rem;display:flex;flex-direction:column;align-items:center;gap:.9rem}
+.sysT{font:700 clamp(1rem,1.7vw,1.3rem) 'Space Grotesk';text-align:center}
+.sysT small{display:block;font:500 .8rem Inter;color:var(--muted);margin-top:.15rem}
+.syms{display:flex;gap:.35rem;flex-wrap:wrap;justify-content:center}
+.sym{display:flex;flex-direction:column;align-items:center;gap:.3rem;animation:pop .45s ease backwards}
+.sym .g{min-width:clamp(2rem,4vw,3.2rem);height:clamp(2.6rem,5vw,4rem);padding:0 .3rem;border-radius:10px;background:#0b1328;border:2px solid;display:grid;place-items:center;font:700 clamp(1.3rem,2.8vw,2.2rem) var(--mono)}
+.sym .v{font:700 clamp(.78rem,1.3vw,1rem) var(--mono)}
+.sysSum{font:600 clamp(.85rem,1.4vw,1.05rem) var(--mono);color:var(--muted);text-align:center}
+.sysSum b{color:var(--c)}
+.verdict{font:700 .85rem 'Space Grotesk';padding:.3rem .8rem;border-radius:999px}
+.verdict.same{background:#7cf29a22;color:var(--c)}
+.verdict.diff{background:#ffb54722;color:var(--b)}
+@keyframes pop{from{opacity:0;transform:translateY(12px)}}
+
+/* indice */
+.idxrow{display:flex;gap:clamp(.5rem,1.5vw,1.2rem)}
+.ic{display:flex;flex-direction:column;align-items:center;gap:.45rem}
+.ic .digit{cursor:default}
+.ic .digit:hover{transform:none;border-color:#33437c}
+.ic.sel .digit{border-color:var(--b);box-shadow:0 0 26px -4px var(--b)}
+.ic .ixb{font:700 .85rem var(--mono);color:var(--c);border:1px solid #7cf29a66;border-radius:999px;padding:.15rem .6rem;opacity:0;transform:translateY(6px);transition:.4s}
+.ic .ixb.show{opacity:1;transform:none}
+.ic .vv{font:700 clamp(.85rem,1.4vw,1.05rem) var(--mono);color:var(--c);min-height:1.3em}
+.calc{font:700 clamp(1.15rem,2.5vw,1.9rem) var(--mono);text-align:center;min-height:1.5em}
+.calc sup{font-size:.6em}
+.calc .r{color:var(--c)}
+.calc .m{color:var(--muted)}
+.idxsum{font:600 clamp(.9rem,1.6vw,1.2rem) var(--mono);color:var(--muted);text-align:center;min-height:1.4em}
+.idxsum b{color:var(--c)}
+
+/* esercizi: colonne affiancate */
+.slide.full{grid-template-columns:minmax(0,1fr);gap:1.2rem}
+.slide.full .head{display:flex;align-items:flex-end;gap:.6rem 3rem;flex-wrap:wrap}
+.slide.full h2{margin:0}
+.slide.full ul.key{display:flex;flex-wrap:wrap;gap:.4rem 1.8rem;padding-bottom:.35rem}
+.slide.full .stage{height:clamp(340px,64vh,860px)}
+.exwrap{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.excol{display:flex;flex-direction:column;gap:.6rem;min-height:0;background:#0f1630;border:1px solid var(--line);border-radius:16px;padding:.75rem}
+.exhead{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+.exhead h3{font:700 clamp(1rem,1.6vw,1.3rem) 'Space Grotesk';margin-right:auto}
+.exhead h3 span{color:var(--a)}
+.exgrid{grid-template-columns:repeat(auto-fill,minmax(190px,1fr))}
+.ex{padding:.7rem .8rem;gap:.45rem}
+.ex .q{font-size:clamp(1rem,1.5vw,1.25rem)}
+.ex .q .k{margin-right:.1rem}
+.ex .foot{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+.ex .foot .btn{padding:.3rem .65rem;font-size:.8rem}
+.ex .fb{flex:1}
+.extabs{display:none}
+.exbases{display:flex;align-items:center;gap:.5rem .8rem;flex-wrap:wrap}
+.exbases .k{font:700 .75rem 'Space Grotesk';letter-spacing:.14em;color:var(--muted)}
+.exbases .tabsmall .btn{padding:.4rem .85rem;font-size:.88rem}
+.exbases .hint b{color:var(--b);font-family:var(--mono)}
+@media (max-width:1100px){
+  .extabs{display:flex}
+  .exwrap{grid-template-columns:minmax(0,1fr)}
+  .exwrap[data-show=b2d] .excol[data-k=d2b],.exwrap[data-show=d2b] .excol[data-k=b2d]{display:none}
+}
+@media (max-width:900px),(max-height:520px){
+  .slide.full .head{display:block}
+  .slide.full h2{margin-bottom:.9rem}
+  .slide.full ul.key{display:grid}
+  .exwrap{flex:none}
+  .excol{min-height:auto}
+  .cmp{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:520px){
+  .cell{width:auto;min-width:2.1rem;padding:0 .15rem}
+  .cell.two{height:2.9rem}
+  .cell .pw{font-size:.58rem}
+  .cell .pv{font-size:.9rem}
+  .cell.ix{font-size:.75rem;padding:.1rem .35rem}
+  .tbl .lbl{display:block}
+}
+</style>
+</head>
+<body>
+<div class="progress" id="prog"></div>
+<main class="deck">
+
+<!-- 1 · TITOLO -->
+<section class="slide hero" data-r="hero">
+  <div class="bgcv"><canvas id="cv-hero"></canvas></div>
+  <div>
+    <div class="num">SISTEMI DI NUMERAZIONE · CLASSE 1ª</div>
+    <h1>Il sistema<br><span>binario</span></h1>
+    <p class="sub">Dalla base 10 alla base 2: impariamo a convertire.</p>
+    <div class="chips">
+      <span class="chip"><b>←&nbsp;→</b> per navigare</span>
+      <span class="chip"><b>F</b> schermo intero</span>
+    </div>
+  </div>
+</section>
+
+<!-- 2 · PERCORSO -->
+<section class="slide" data-r="path">
+  <div>
+    <div class="num"><b>01</b> · IL PERCORSO</div>
+    <h2>Dove siamo,<br>dove <span>andiamo</span></h2>
+    <ul class="key">
+      <li>Abbiamo visto la <b>base 10</b></li>
+      <li>Esistono <b>altre basi</b></li>
+      <li>Oggi: le <b>conversioni</b></li>
+      <li>Obiettivo: arrivare al <b>binario</b></li>
+    </ul>
+  </div>
+  <div class="stage">
+    <div class="area">
+      <ol class="path">
+        <li class="done"><span class="dot">✓</span><div><div class="t">La base 10</div><div class="s">il sistema che usiamo ogni giorno</div></div><span class="tag">FATTO</span></li>
+        <li class="done"><span class="dot">✓</span><div><div class="t">Altre basi</div><div class="s">non esiste solo il 10</div></div><span class="tag">FATTO</span></li>
+        <li class="now"><span class="dot">3</span><div><div class="t">Sistemi posizionali</div><div class="s">l'indice di posizione</div></div><span class="tag">OGGI</span></li>
+        <li class="now"><span class="dot">4</span><div><div class="t">Base 5 e base 8</div><div class="s">conversioni da e verso la base 10</div></div><span class="tag">OGGI</span></li>
+        <li class="now"><span class="dot">5</span><div><div class="t">Il binario: 0 e 1</div><div class="s">la lingua dei computer</div></div><span class="tag">OGGI</span></li>
+        <li class="now"><span class="dot">6</span><div><div class="t">Conversioni in binario</div><div class="s">da e verso la base 10</div></div><span class="tag">OGGI</span></li>
+        <li class="next"><span class="dot">7</span><div><div class="t">Esercizi</div><div class="s">mettiamoci alla prova</div></div><span class="tag">ALLA FINE</span></li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- 3 · CERCHIO -->
+<section class="slide" data-r="circle">
+  <div>
+    <div class="num"><b>02</b> · <span contenteditable="true" spellcheck="false">INSIEME</span></div>
+    <h2 contenteditable="true" spellcheck="false">Proviamo<br><span>insieme</span></h2>
+    <p class="hint">Clic sul titolo per modificarlo</p>
+  </div>
+  <div class="circle-wrap"><div class="circle"></div></div>
+</section>
+
+<!-- 4 · BASE 10 -->
+<section class="slide" data-r="b10">
+  <div>
+    <div class="num"><b>03</b> · RIPASSO</div>
+    <h2>La <span>base 10</span></h2>
+    <ul class="key">
+      <li>Usiamo <b>10 cifre</b>: da 0 a 9</li>
+      <li>Conta la <b>posizione</b> della cifra</li>
+      <li>Ogni posizione vale <b>10 volte</b> quella a destra</li>
+    </ul>
+  </div>
+  <div class="stage">
+    <div class="area">
+      <div class="places" id="places"></div>
+      <div class="decomp" id="decomp"></div>
+    </div>
+    <div class="controls">
+      <button class="btn pri" id="b10Rnd">🎲 Numero a caso</button>
+      <span class="hint">Tocca una cifra per cambiarla</span>
+    </div>
+  </div>
+</section>
+
+<!-- 5 · ALTRE BASI -->
+<section class="slide" data-r="basi">
+  <div>
+    <div class="num"><b>04</b> · RIPASSO</div>
+    <h2>Non solo<br>la <span>base 10</span></h2>
+    <ul class="key">
+      <li>La <b>base</b> = quante cifre usiamo</li>
+      <li>Finite le cifre, si passa alla <b>posizione dopo</b></li>
+      <li>Base 2 → solo <b>0 e 1</b></li>
+      <li>Base 16 → servono anche le <b>lettere</b></li>
+    </ul>
+  </div>
+  <div class="stage">
+    <div class="btabs" id="btabs"></div>
+    <div class="area">
+      <div class="digset" id="digset"></div>
+      <div class="odo" id="odo"></div>
+      <div class="eqdec" id="eqdec"></div>
+    </div>
+    <div class="controls">
+      <button class="btn pri" id="odoPlay">⏸ Pausa</button>
+      <button class="btn" id="odoStep">+1</button>
+      <button class="btn" id="odoReset">↺ Da zero</button>
+    </div>
+  </div>
+</section>
+
+<!-- 6 · POSIZIONALI E NON -->
+<section class="slide wide" data-r="pos">
+  <div>
+    <div class="num"><b>05</b> · SISTEMI DI NUMERAZIONE</div>
+    <h2>Posizionali<br>e <span>non</span></h2>
+    <ul class="key">
+      <li><b>Non posizionale</b>: un simbolo vale sempre uguale</li>
+      <li>Esempio: i <b>numeri romani</b></li>
+      <li><b>Posizionale</b>: il valore dipende dal <b>posto</b></li>
+      <li>La base 10 è <b>posizionale</b></li>
+    </ul>
+  </div>
+  <div class="stage">
+    <div class="area">
+      <div class="cmp">
+        <div class="sys"><div class="sysT">Non posizionale<small>numeri romani</small></div><div class="syms" id="romSyms"></div><div class="sysSum" id="romSum"></div><span class="verdict same">stesso simbolo → stesso valore</span></div>
+        <div class="sys"><div class="sysT">Posizionale<small>sistema decimale</small></div><div class="syms" id="decSyms"></div><div class="sysSum" id="decSum"></div><span class="verdict diff">stessa cifra → valore diverso</span></div>
+      </div>
+    </div>
+    <div class="controls">
+      <button class="btn" id="posPrev">◀</button>
+      <button class="btn pri" id="posNext">Altro esempio ▶</button>
+      <span class="hint">Stesso colore = stesso simbolo</span>
+    </div>
+  </div>
+</section>
+
+<!-- 7 · INDICE DI POSIZIONE -->
+<section class="slide wide" data-r="idx">
+  <div>
+    <div class="num"><b>06</b> · LA REGOLA</div>
+    <h2>L'indice di<br><span>posizione</span></h2>
+    <ul class="key">
+      <li>Ogni cifra ha un <b>indice</b></li>
+      <li>Si conta <b>da destra</b>, partendo da <b>0</b></li>
+      <li>Valore = <b>cifra × base<sup>indice</sup></b></li>
+      <li>Poi si <b>sommano</b> tutti i valori</li>
+    </ul>
+  </div>
+  <div class="stage">
+    <div class="formula">valore = <span class="fc">cifra</span> × <span class="fb">base</span><sup class="fi">indice</sup></div>
+    <div class="area">
+      <div class="idxrow" id="idxRow"></div>
+      <div class="calc" id="idxCalc"></div>
+      <div class="idxsum" id="idxSum"></div>
+    </div>
+    <div class="controls">
+      <button class="btn" id="idxPrev">◀ Indietro</button>
+      <button class="btn pri" id="idxNext">Avanti ▶</button>
+      <button class="btn" id="idxRnd">🎲 Numero a caso</button>
+    </div>
+  </div>
+</section>
+
+<!-- 8 · BASE 5/8 -> DEC -->
+<section class="slide wide" data-r="td58">
+  <div>
+    <div class="num"><b>07</b> · CONVERSIONE</div>
+    <h2>Da base 5 e 8<br>a <span>base 10</span></h2>
+    <ul class="key">
+      <li>Scrivi l'<b>indice</b> sotto ogni cifra</li>
+      <li>Calcola <b>base<sup>indice</sup></b></li>
+      <li>Moltiplica per la <b>cifra</b></li>
+      <li><b>Somma</b> tutto</li>
+    </ul>
+  </div>
+  <div class="stage">
+    <div class="tabsmall" id="td58Tabs"></div>
+    <div class="steps" id="td58Steps"><span></span><span></span><span></span><span></span><span></span></div>
+    <div class="cap" id="td58Cap"></div>
+    <div class="area">
+      <div class="tbl" id="td58Tbl"></div>
+      <div class="result hide" id="td58Res"></div>
+    </div>
+    <div class="controls">
+      <button class="btn" id="td58Prev">◀</button>
+      <button class="btn pri" id="td58Next">Avanti ▶</button>
+      <span class="spacer"></span>
+      <input class="inp" id="td58In" maxlength="4" inputmode="numeric" aria-label="Numero da convertire">
+      <button class="btn" id="td58Go">Prova</button>
+      <button class="btn" id="td58Rnd">🎲</button>
+    </div>
+  </div>
+</section>
+
+<!-- 9 · DEC -> BASE 5/8 -->
+<section class="slide wide" data-r="fd58">
+  <div>
+    <div class="num"><b>08</b> · CONVERSIONE</div>
+    <h2>Da base 10<br>a <span>base 5 e 8</span></h2>
+    <ul class="key">
+      <li><b>Dividi per la base</b> (5 o 8)</li>
+      <li>Scrivi il <b>resto</b></li>
+      <li>Continua finché arrivi a <b>0</b></li>
+      <li>Leggi i resti <b>dal basso verso l'alto</b></li>
+    </ul>
+  </div>
+  <div class="stage">
+    <div class="tabsmall" id="fd58Tabs"></div>
+    <div class="cap" id="fd58Cap"></div>
+    <div class="area">
+      <div class="divwrap">
+        <div class="divs" id="fd58Divs"></div>
+        <div class="arrowup" id="fd58Arrow"><span>LEGGI COSÌ</span></div>
+      </div>
+      <div class="result hide" id="fd58Res"></div>
+    </div>
+    <div class="controls">
+      <button class="btn" id="fd58Prev">◀</button>
+      <button class="btn pri" id="fd58Next">Avanti ▶</button>
+      <button class="btn" id="fd58All">Tutto</button>
+      <span class="spacer"></span>
+      <input class="inp" id="fd58In" placeholder="es. 87" maxlength="3" inputmode="numeric" aria-label="Numero decimale">
+      <button class="btn" id="fd58Go">Prova</button>
+      <button class="btn" id="fd58Rnd">🎲</button>
+    </div>
+  </div>
+</section>
+
+<!-- 11 · BIN -> DEC -->
+<section class="slide wide" data-r="td2">
+  <div>
+    <div class="num"><b>09</b> · CONVERSIONE</div>
+    <h2>Da binario<br>a <span>decimale</span></h2>
+    <ul class="key">
+      <li>Stessa regola: <b>cifra × 2<sup>indice</sup></b></li>
+      <li>Sotto gli <b>0</b> il valore è 0</li>
+      <li>Basta sommare i pesi sotto gli <b>1</b></li>
+    </ul>
+  </div>
+  <div class="stage">
+    <div class="steps" id="td2Steps"><span></span><span></span><span></span><span></span><span></span></div>
+    <div class="cap" id="td2Cap"></div>
+    <div class="area">
+      <div class="tbl" id="td2Tbl"></div>
+      <div class="result hide" id="td2Res"></div>
+    </div>
+    <div class="controls">
+      <button class="btn" id="td2Prev">◀</button>
+      <button class="btn pri" id="td2Next">Avanti ▶</button>
+      <span class="spacer"></span>
+      <input class="inp" id="td2In" placeholder="es. 101101" maxlength="8" inputmode="numeric" aria-label="Numero binario">
+      <button class="btn" id="td2Go">Prova</button>
+      <button class="btn" id="td2Rnd">🎲</button>
+    </div>
+  </div>
+</section>
+
+<!-- 10 · BINARIO -->
+<section class="slide wide" data-r="bin">
+  <div>
+    <div class="num"><b>10</b> · IL BINARIO</div>
+    <h2>Solo <span>0</span><br>e <span>1</span></h2>
+    <ul class="key">
+      <li><b>Bit</b> = cifra binaria</li>
+      <li>Come una lampadina: <b>spenta 0</b>, <b>accesa 1</b></li>
+      <li>I pesi sono <b>2<sup>indice</sup></b>: raddoppiano</li>
+      <li>8 bit = 1 <b>byte</b></li>
+    </ul>
+  </div>
+  <div class="stage">
+    <div class="area">
+      <div class="bulbs" id="bulbs"></div>
+      <div class="sumline" id="bSum"></div>
+      <div class="bigval" id="bVal"></div>
+    </div>
+    <div class="controls">
+      <button class="btn pri" id="bPlus">+1</button>
+      <button class="btn" id="bAuto">▶ Conta da solo</button>
+      <button class="btn" id="bZero">↺ Spegni tutto</button>
+      <span class="hint">Tocca le lampadine!</span>
+    </div>
+  </div>
+</section>
+
+<!-- 12 · DEC -> BIN -->
+<section class="slide wide" data-r="fd2">
+  <div>
+    <div class="num"><b>11</b> · CONVERSIONE</div>
+    <h2>Da decimale<br>a <span>binario</span></h2>
+    <ul class="key">
+      <li><b>Dividi per 2</b></li>
+      <li>Il <b>resto</b> è sempre 0 o 1</li>
+      <li>Continua finché arrivi a <b>0</b></li>
+      <li>Leggi i resti <b>dal basso verso l'alto</b></li>
+    </ul>
+  </div>
+  <div class="stage">
+    <div class="cap" id="fd2Cap"></div>
+    <div class="area">
+      <div class="divwrap">
+        <div class="divs" id="fd2Divs"></div>
+        <div class="arrowup" id="fd2Arrow"><span>LEGGI COSÌ</span></div>
+      </div>
+      <div class="result hide" id="fd2Res"></div>
+    </div>
+    <div class="controls">
+      <button class="btn" id="fd2Prev">◀</button>
+      <button class="btn pri" id="fd2Next">Avanti ▶</button>
+      <button class="btn" id="fd2All">Tutto</button>
+      <span class="spacer"></span>
+      <input class="inp" id="fd2In" placeholder="es. 45" maxlength="3" inputmode="numeric" aria-label="Numero decimale">
+      <button class="btn" id="fd2Go">Prova</button>
+      <button class="btn" id="fd2Rnd">🎲</button>
+    </div>
+  </div>
+</section>
+
+<!-- 13 · ESERCIZI -->
+<section class="slide full" data-r="ex">
+  <div class="head">
+    <div>
+      <div class="num"><b>12</b> · ESERCIZI</div>
+      <h2>Tocca a <span>voi</span>!</h2>
+    </div>
+    <ul class="key">
+      <li>Scegli la <b>base</b></li>
+      <li>Scrivi la risposta e premi <b>Invio</b></li>
+      <li>Bloccati? Guarda la <b>soluzione</b></li>
+    </ul>
+  </div>
+  <div class="stage">
+    <div class="exbases">
+      <span class="k">BASE</span>
+      <div class="tabsmall" id="exBases"></div>
+      <span class="hint" id="exHint"></span>
+    </div>
+    <div class="extabs">
+      <button class="btn pri" data-show="b2d" id="tabTo"></button>
+      <button class="btn" data-show="d2b" id="tabFrom"></button>
+    </div>
+    <div class="exwrap" id="exwrap" data-show="b2d">
+      <div class="excol" data-k="b2d">
+        <div class="exhead"><h3 id="hTo"></h3><span class="score" id="sc-b2d"></span><button class="btn" data-new="b2d">🎲 Nuovi</button></div>
+        <div class="exgrid" id="g-b2d"></div>
+      </div>
+      <div class="excol" data-k="d2b">
+        <div class="exhead"><h3 id="hFrom"></h3><span class="score" id="sc-d2b"></span><button class="btn" data-new="d2b">🎲 Nuovi</button></div>
+        <div class="exgrid" id="g-d2b"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<nav class="nav">
+  <button class="arr" id="prevB" aria-label="Indietro">←</button>
+  <div class="dots" id="dots"></div>
+  <span class="count" id="count"></span>
+  <button class="arr" id="nextB" aria-label="Avanti">→</button>
+  <button class="arr" id="fsB" aria-label="Schermo intero">⛶</button>
+</nav>
+
+<script>
+const $=s=>document.querySelector(s);
+const el=(tag,cls,html)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(html!=null)e.innerHTML=html;return e;};
+const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const nb=(n,b)=>`<span class="paren">(</span>${n}<span class="paren">)</span><sub>${b}</sub>`;
+const shake=i=>{i.classList.remove('bad');void i.offsetWidth;i.classList.add('bad');};
+const ENTER={},LEAVE={};
+
+/* ---------- HERO ---------- */
+const HERO={cols:[]};
+function heroFrame(t){
+  const c=$('#cv-hero'),r=c.getBoundingClientRect(),d=devicePixelRatio||1;
+  if(c.width!==Math.round(r.width*d)||c.height!==Math.round(r.height*d)){c.width=Math.round(r.width*d);c.height=Math.round(r.height*d);HERO.cols=[];}
+  const ctx=c.getContext('2d');ctx.setTransform(d,0,0,d,0,0);ctx.clearRect(0,0,r.width,r.height);
+  if(!HERO.cols.length){for(let x=12;x<r.width;x+=34)HERO.cols.push({x,y:Math.random()*r.height,v:.02+Math.random()*.05,seed:Math.random()*1000});}
+  ctx.font='600 18px "JetBrains Mono",monospace';ctx.textAlign='center';
+  for(const col of HERO.cols){
+    col.y=(col.y+col.v*16)%(r.height+400);
+    for(let k=0;k<12;k++){const y=col.y-k*24;if(y<-20||y>r.height+20)continue;
+      const bit=((Math.floor(col.seed+k*7+t*.002))%2);
+      ctx.fillStyle=k===0?'rgba(124,242,154,.4)':`rgba(56,214,255,${.14*(1-k/12)})`;
+      ctx.fillText(bit,col.x,y);}
+  }
+}
+
+/* ---------- BASE 10 ---------- */
+const B10={d:[2,0,2,6]};
+const PNAME=['migliaia','centinaia','decine','unità'],PW=[1000,100,10,1],PEXP=['10³','10²','10¹','10⁰'];
+function b10Render(flash){
+  const P=$('#places');P.innerHTML='';
+  B10.d.forEach((v,i)=>{const p=el('div','place');
+    p.append(el('div','nm',PNAME[i]),el('div','digit'+(flash===i?' flash':''),v),el('div','w','×'+PW[i].toLocaleString('it-IT')+' ('+PEXP[i]+')'));
+    p.querySelector('.digit').onclick=()=>{B10.d[i]=(B10.d[i]+1)%10;b10Render(i);};P.append(p);});
+  const n=B10.d.reduce((s,v,i)=>s+v*PW[i],0);
+  $('#decomp').innerHTML=B10.d.map((v,i)=>`<span class="p">${v}</span><span class="x">×${PW[i].toLocaleString('it-IT')}</span>`).join(' + ')+
+    `<br><span class="x">=</span> `+B10.d.map((v,i)=>(v*PW[i]).toLocaleString('it-IT')).join(' + ')+` <span class="x">=</span> <span class="r">${n.toLocaleString('it-IT')}</span>`;
+}
+$('#b10Rnd').onclick=()=>{B10.d=[rnd(1,9),rnd(0,9),rnd(0,9),rnd(0,9)];b10Render();};
+
+/* ---------- ALTRE BASI ---------- */
+const DIG='0123456789ABCDEF';
+const OD={base:2,n:0,play:true,last:0,prev:''};
+[2,5,6,7,8,9,10,16].forEach(b=>{const t=el('button','btn','Base '+b);t.dataset.b=b;t.onclick=()=>{OD.base=b;OD.n=0;OD.prev='';odRender();};$('#btabs').append(t);});
+function odRender(){
+  [...$('#btabs').children].forEach(t=>t.classList.toggle('pri',+t.dataset.b===OD.base));
+  const s=OD.n.toString(OD.base).toUpperCase(),L=6,full=s.padStart(L,'0'),prev=OD.prev;
+  $('#odo').innerHTML=[...full].map((ch,i)=>`<span class="${i<L-s.length?'lead':''} ${prev&&prev[i]!==ch?'tick':''}">${ch}</span>`).join('');
+  OD.prev=full;
+  const last=s[s.length-1];
+  $('#digset').innerHTML=[...DIG].map((ch,i)=>`<span class="${i>=OD.base?'off':''} ${ch===last?'hl':''}">${ch}</span>`).join('');
+  $('#eqdec').innerHTML=`<b>${nb(s,OD.base)}</b> &nbsp;=&nbsp; <b>${nb(OD.n,10)}</b>`;
+}
+$('#odoPlay').onclick=e=>{OD.play=!OD.play;e.currentTarget.textContent=OD.play?'⏸ Pausa':'▶ Conta';};
+$('#odoStep').onclick=()=>{OD.n++;odRender();};
+$('#odoReset').onclick=()=>{OD.n=0;OD.prev='';odRender();};
+ENTER.basi=()=>{OD.n=0;OD.prev='';odRender();};
+function odFrame(t){if(OD.play&&t-OD.last>(OD.base<5?900:650)){OD.last=t;OD.n=(OD.n+1)%Math.min(OD.base**4,1000);odRender();}}
+
+/* ---------- POSIZIONALI E NON ---------- */
+const ROM={M:1000,D:500,C:100,L:50,X:10,V:5,I:1};
+const POS_EX=[[111,'CXI'],[222,'CCXXII'],[333,'CCCXXXIII'],[23,'XXIII'],[2026,'MMXXVI'],[1666,'MDCLXVI']];
+const PCOL=['#38d6ff','#ffb547','#7cf29a','#ff6b9a','#b18cff','#ff9e6b','#6bd0ff','#f4e36b','#9be0c9','#e0a0ff'];
+const PS={i:0};
+function posRender(){
+  const [n,r]=POS_EX[PS.i];
+  const colOf=(ch,list)=>PCOL[list.indexOf(ch)%PCOL.length];
+  const rl=[...new Set(r)],dl=[...new Set(String(n))];
+  $('#romSyms').innerHTML=[...r].map((ch,i)=>`<div class="sym" style="animation-delay:${i*.06}s"><div class="g" style="color:${colOf(ch,rl)};border-color:${colOf(ch,rl)}">${ch}</div><div class="v" style="color:${colOf(ch,rl)}">${ROM[ch]}</div></div>`).join('');
+  $('#romSum').innerHTML=[...r].map(ch=>ROM[ch]).join(' + ')+` = <b>${n}</b>`;
+  const s=String(n),L=s.length;
+  $('#decSyms').innerHTML=[...s].map((ch,i)=>`<div class="sym" style="animation-delay:${i*.06}s"><div class="g" style="color:${colOf(ch,dl)};border-color:${colOf(ch,dl)}">${ch}</div><div class="v" style="color:${colOf(ch,dl)}">${(+ch*10**(L-1-i)).toLocaleString('it-IT')}</div></div>`).join('');
+  $('#decSum').innerHTML=[...s].map((ch,i)=>(+ch*10**(L-1-i)).toLocaleString('it-IT')).join(' + ')+` = <b>${n.toLocaleString('it-IT')}</b>`;
+}
+$('#posNext').onclick=()=>{PS.i=(PS.i+1)%POS_EX.length;posRender();};
+$('#posPrev').onclick=()=>{PS.i=(PS.i-1+POS_EX.length)%POS_EX.length;posRender();};
+ENTER.pos=()=>{PS.i=0;posRender();};
+
+/* ---------- INDICE DI POSIZIONE ---------- */
+const IX={d:[2,0,2,6],step:0};
+const SUP='⁰¹²³⁴⁵⁶⁷⁸⁹';
+function ixRender(){
+  const d=IX.d,n=d.length,st=IX.step,last=n+2;
+  const R=$('#idxRow');R.innerHTML='';
+  const k=st>=2&&st<=n+1?st-2:-1;                 // indice in calcolo
+  d.forEach((v,i)=>{const ix=n-1-i,c=el('div','ic'+(ix===k?' sel':''));
+    const done=(st>=2&&ix<=st-2&&st<=n+1)||st===last;
+    c.innerHTML=`<div class="digit">${v}</div><div class="ixb${st>=1?' show':''}" style="transition-delay:${st===1?(ix*.15)+'s':'0s'}">indice ${ix}</div><div class="vv">${done?'= '+(v*10**ix).toLocaleString('it-IT'):''}</div>`;
+    R.append(c);});
+  const C=$('#idxCalc');
+  if(st===0)C.innerHTML=`<span class="m">Ogni cifra occupa un posto…</span>`;
+  else if(st===1)C.innerHTML=`<span class="m">Indici da destra: </span>${[...Array(n).keys()].map(i=>`<span class="fi">${i}</span>`).join(', ')}`;
+  else if(k>=0){const v=d[n-1-k];C.innerHTML=`<span class="fc">${v}</span> × <span class="fb">10</span><sup class="fi">${k}</sup> = ${v} × ${(10**k).toLocaleString('it-IT')} = <span class="r">${(v*10**k).toLocaleString('it-IT')}</span>`;}
+  else C.innerHTML=`${d.map((v,i)=>`<span class="fc">${v}</span>×<span class="fb">10</span><sup class="fi">${n-1-i}</sup>`).join(' + ')}`;
+  const terms=d.map((v,i)=>({v:v*10**(n-1-i),ix:n-1-i})).filter(t=>st===last||(st>=2&&t.ix<=st-2));
+  const total=d.reduce((s,v,i)=>s+v*10**(n-1-i),0);
+  $('#idxSum').innerHTML=terms.length?terms.map(t=>t.v.toLocaleString('it-IT')).join(' + ')+(st===last?` = <b>${nb(total.toLocaleString('it-IT'),10)}</b>`:''):'';
+  $('#idxPrev').disabled=st===0;$('#idxNext').disabled=st===last;
+}
+$('#idxPrev').onclick=()=>{IX.step=Math.max(0,IX.step-1);ixRender();};
+$('#idxNext').onclick=()=>{IX.step=Math.min(IX.d.length+2,IX.step+1);ixRender();};
+$('#idxRnd').onclick=()=>{IX.d=[rnd(1,9),rnd(0,9),rnd(0,9),rnd(0,9)];IX.step=0;ixRender();};
+ENTER.idx=()=>{IX.step=0;ixRender();};
+
+/* ---------- CONVERSIONE VERSO BASE 10 (generica) ---------- */
+function makeToDec(p,cfg){
+  const S={b:cfg.bases[0],s:cfg.def[cfg.bases[0]],step:0};
+  const CAP=b=>[`Scriviamo il numero in <b>base ${b}</b>`,
+    `Sotto ogni cifra il suo <b>indice</b>: da destra, partendo da 0`,
+    `Calcoliamo le potenze: <b>${b}<sup>indice</sup></b>`,
+    `Moltiplichiamo: <b>cifra × ${b}<sup>indice</sup></b>`,
+    `<b>Sommiamo</b> tutto: ecco il numero in base 10`];
+  const tabs=$('#'+p+'Tabs');
+  if(tabs&&cfg.bases.length>1)cfg.bases.forEach(b=>{const t=el('button','btn','Base '+b);t.dataset.b=b;t.onclick=()=>{S.b=b;S.s=cfg.def[b];S.step=0;render();};tabs.append(t);});
+  function render(){
+    if(tabs)[...tabs.children].forEach(t=>t.classList.toggle('pri',+t.dataset.b===S.b));
+    const s=S.s,b=S.b,n=s.length,st=S.step,T=$('#'+p+'Tbl');
+    T.style.gridTemplateColumns=`auto repeat(${n},auto)`;T.innerHTML='';
+    const h=x=>x?'':' hide',dl=(on,i)=>on?(i*.1)+'s':'0s';
+    T.append(el('div','lbl','cifra'));
+    [...s].forEach(ch=>T.append(el('div','cell bitc',ch)));
+    T.append(el('div','lbl'+h(st>=1),'indice'));
+    [...s].forEach((ch,i)=>{const c=el('div','cell ix'+h(st>=1),n-1-i);c.style.transitionDelay=dl(st===1,n-1-i);T.append(c);});
+    T.append(el('div','lbl'+h(st>=2),'potenza'));
+    [...s].forEach((ch,i)=>{const e=n-1-i,c=el('div','cell two wc'+h(st>=2),`<span class="pw"><span class="fb">${b}</span><sup class="fi">${e}</sup></span><span class="pv">${b**e}</span>`);c.style.transitionDelay=dl(st===2,n-1-i);T.append(c);});
+    T.append(el('div','lbl'+h(st>=3),'cifra × pot.'));
+    [...s].forEach((ch,i)=>{const e=n-1-i,v=+ch*b**e,c=el('div','cell two pc '+(+ch?'one':'zero')+h(st>=3),`<span class="pw">${ch}×${b**e}</span><span class="pv">${v}</span>`);c.style.transitionDelay=dl(st===3,i);T.append(c);});
+    const val=parseInt(s,b),terms=[...s].map((ch,i)=>+ch*b**(n-1-i)).filter(x=>x);
+    const R=$('#'+p+'Res');R.classList.toggle('hide',st<4);
+    R.innerHTML=`${terms.join(' + ')||'0'} = <span class="eq">${val}</span><br><span style="font-size:.8em;color:var(--muted)">${nb(s,b)} = ${nb(val,10)}</span>`;
+    $('#'+p+'Cap').innerHTML=CAP(b)[st];
+    document.querySelectorAll('#'+p+'Steps span').forEach((e,i)=>e.classList.toggle('on',i<=st));
+    $('#'+p+'Prev').disabled=st===0;$('#'+p+'Next').disabled=st===4;
+    const inp=$('#'+p+'In');inp.placeholder='es. '+cfg.def[b];inp.maxLength=b===2?8:4;
+  }
+  $('#'+p+'Prev').onclick=()=>{S.step=Math.max(0,S.step-1);render();};
+  $('#'+p+'Next').onclick=()=>{S.step=Math.min(4,S.step+1);render();};
+  $('#'+p+'Rnd').onclick=()=>{S.s=cfg.rand(S.b);S.step=0;render();};
+  const go=()=>{const i=$('#'+p+'In'),v=i.value.trim(),re=new RegExp(`^[0-${S.b-1}]{1,${S.b===2?8:4}}$`);
+    if(re.test(v)){S.s=v.replace(/^0+(?=.)/,'');S.step=0;i.value='';render();}else shake(i);};
+  $('#'+p+'Go').onclick=go;$('#'+p+'In').onkeydown=e=>{if(e.key==='Enter')go();};
+  ENTER[p]=()=>{S.step=0;render();};
+  render();
+}
+makeToDec('td58',{bases:[5,8],def:{5:'324',8:'157'},rand:b=>String(rnd(1,b-1))+rnd(0,b-1)+rnd(0,b-1)});
+makeToDec('td2',{bases:[2],def:{2:'101101'},rand:()=>rnd(17,127).toString(2)});
+
+/* ---------- CONVERSIONE DA BASE 10 (generica) ---------- */
+function makeFromDec(p,cfg){
+  const S={b:cfg.bases[0],n:cfg.def[cfg.bases[0]],step:0,rows:[]};
+  const tabs=$('#'+p+'Tabs');
+  if(tabs&&cfg.bases.length>1)cfg.bases.forEach(b=>{const t=el('button','btn','Base '+b);t.dataset.b=b;t.onclick=()=>{S.b=b;set(cfg.def[b]);};tabs.append(t);});
+  function build(){S.rows=[];let x=S.n;do{S.rows.push([x,Math.floor(x/S.b),x%S.b]);x=Math.floor(x/S.b);}while(x>0);}
+  function render(){
+    if(tabs)[...tabs.children].forEach(t=>t.classList.toggle('pri',+t.dataset.b===S.b));
+    const D=$('#'+p+'Divs');D.innerHTML='';const k=S.rows.length,st=S.step,b=S.b;
+    S.rows.forEach(([n,q,r],i)=>{const sh=i<st?' show':'';
+      D.append(el('div','r n'+sh,n),el('div','r op'+sh,`: ${b} =`),el('div','r q'+sh,q),el('div','r rem'+sh,r));});
+    const done=st>k;
+    $('#'+p+'Arrow').classList.toggle('show',done);
+    const R=$('#'+p+'Res');R.classList.toggle('hide',!done);
+    R.innerHTML=`${nb(S.n,10)} = <span class="eq">${nb(S.n.toString(b),b)}</span>`;
+    $('#'+p+'Cap').innerHTML=st===0?`Convertiamo <b>${S.n}</b> in base ${b}`:
+      !done&&st<k?`Dividiamo per <b>${b}</b> e scriviamo il <b>resto</b>…`:
+      !done?`Siamo arrivati a <b>0</b>: ci fermiamo!`:`Leggiamo i resti <b>dal basso verso l'alto</b>`;
+    $('#'+p+'Prev').disabled=st===0;$('#'+p+'Next').disabled=done;$('#'+p+'All').disabled=done;
+    $('#'+p+'In').placeholder='es. '+cfg.def[b];
+  }
+  function set(n){S.n=n;S.step=0;build();render();}
+  $('#'+p+'Prev').onclick=()=>{S.step=Math.max(0,S.step-1);render();};
+  $('#'+p+'Next').onclick=()=>{S.step=Math.min(S.rows.length+1,S.step+1);render();};
+  $('#'+p+'All').onclick=()=>{S.step=S.rows.length+1;render();};
+  $('#'+p+'Rnd').onclick=()=>set(cfg.rand(S.b));
+  const go=()=>{const i=$('#'+p+'In'),v=i.value.trim();
+    if(/^\d{1,3}$/.test(v)&&+v>=1&&+v<=cfg.max){set(+v);i.value='';}else shake(i);};
+  $('#'+p+'Go').onclick=go;$('#'+p+'In').onkeydown=e=>{if(e.key==='Enter')go();};
+  ENTER[p]=()=>{S.step=0;render();};
+  build();render();
+}
+makeFromDec('fd58',{bases:[5,8],def:{5:87,8:157},max:999,rand:b=>b===5?rnd(20,150):rnd(40,500)});
+makeFromDec('fd2',{bases:[2],def:{2:45},max:255,rand:()=>rnd(10,120)});
+
+/* ---------- LAMPADINE ---------- */
+const BL={v:0,auto:false,last:0};
+const WTS=[128,64,32,16,8,4,2,1];
+WTS.forEach((w,i)=>{const b=el('div','bulb');b.innerHTML=`<div class="wt">${w}</div><div class="lamp">💡</div><div class="bit">0</div>`;b.onclick=()=>{BL.v^=w;blRender();};$('#bulbs').append(b);});
+function blRender(){
+  [...$('#bulbs').children].forEach((b,i)=>{const on=!!(BL.v&WTS[i]);b.classList.toggle('on',on);b.querySelector('.bit').textContent=on?1:0;});
+  const parts=WTS.filter(w=>BL.v&w);
+  $('#bSum').innerHTML=parts.length?parts.map(p=>`<b>${p}</b>`).join(' + ')+' = '+BL.v:'tutte spente = 0';
+  $('#bVal').innerHTML=`${nb(BL.v.toString(2).padStart(8,'0'),2)} = ${nb(BL.v,10)}<small>MASSIMO CON 8 BIT: 255</small>`;
+}
+$('#bPlus').onclick=()=>{BL.v=(BL.v+1)%256;blRender();};
+const blStop=()=>{BL.auto=false;$('#bAuto').textContent='▶ Conta da solo';$('#bAuto').classList.remove('on');};
+$('#bZero').onclick=()=>{BL.v=0;blStop();blRender();};
+$('#bAuto').onclick=e=>{BL.auto=!BL.auto;e.currentTarget.textContent=BL.auto?'⏸ Ferma':'▶ Conta da solo';e.currentTarget.classList.toggle('on',BL.auto);};
+LEAVE.bin=blStop;
+function blFrame(t){if(BL.auto&&t-BL.last>700){BL.last=t;BL.v=(BL.v+1)%256;blRender();}}
+
+/* ---------- ESERCIZI ---------- */
+const EXB=[2,5,8,16,'mix'],MIXB=[3,4,5,6,7,8,9,16];
+const EX={base:2,sets:{},state:{}};
+const exKey=(k)=>EX.base+'|'+k;
+const toS=(n,b)=>n.toString(b).toUpperCase();
+function exGen(k,base){
+  const items=[],seen=new Set();
+  while(items.length<6){
+    const b=base==='mix'?MIXB[rnd(0,MIXB.length-1)]:base;
+    const lo=k==='b2d'?(b===2?5:b===16?16:b*b):(b===2?3:b===16?20:b+3),hi=b===2?127:b===16?255:Math.min(b**3-1,400);
+    const n=rnd(lo,hi);if(seen.has(b+':'+n))continue;seen.add(b+':'+n);items.push({b,n});
+  }
+  return base==='mix'?items:items.sort((x,y)=>x.n-y.n);
+}
+function exSet(k){const key=exKey(k);if(!EX.sets[key])EX.sets[key]=EX.base===2?(k==='b2d'?[6,11,18,31,42,100]:[5,13,25,40,63,100]).map(n=>({b:2,n})):exGen(k,EX.base);return EX.sets[key];}
+function exSolTo(q,b){const L=q.length;
+  const t=[...q].map((ch,j)=>{const d=parseInt(ch,b),e=L-1-j;return d?`${ch}${/[A-F]/.test(ch)?'('+d+')':''}×${b**e}`:null;}).filter(Boolean);
+  return t.join(' + ')+' = '+parseInt(q,b);}
+function exSolFrom(n,b){const r=[];let x=n;do{const m=x%b;r.push(`${x}:${b}=${Math.floor(x/b)} r${m>9?m+'='+toS(m,16):m}`);x=Math.floor(x/b);}while(x>0);
+  return r.join(' · ')+' → '+toS(n,b);}
+function exCol(k){
+  const G=$('#g-'+k);G.innerHTML='';const isTo=k==='b2d';
+  exSet(k).forEach(({b,n},i)=>{
+    const key=exKey(k)+i,st=EX.state[key]||{};
+    const q=isTo?toS(n,b):String(n),ans=isTo?String(n):toS(n,b);
+    const c=el('div','ex'+(st.ok===true?' ok':st.ok===false?' ko':''));
+    c.innerHTML=`<div class="q"><span class="k">${i+1}.</span>${nb(q,isTo?b:10)} = ${nb('?',isTo?10:b)}</div>
+      <div class="row"><input class="inp" ${b===16&&!isTo?'autocapitalize="characters"':'inputmode="numeric"'} placeholder="in base ${isTo?10:b}" aria-label="Risposta esercizio ${i+1}"><button class="btn">✓</button></div>
+      <div class="foot"><span class="fb">${st.ok===true?'✓ Corretto!':st.ok===false?'✗ Riprova':''}</span><button class="btn" data-sol>${st.sol?'Nascondi':'👁 Soluzione'}</button></div>
+      ${st.sol?`<div class="sol">${isTo?exSolTo(q,b):exSolFrom(n,b)}</div>`:''}`;
+    const inp=c.querySelector('.inp');inp.value=st.v||'';
+    const check=()=>{const v=inp.value.trim().toUpperCase().replace(/^0+(?=.)/,'');const ok=v===ans;EX.state[key]={...st,v:inp.value,ok};exCol(k);
+      const ni=$('#g-'+k).children[i+1];if(ok&&ni)ni.querySelector('.inp').focus();};
+    c.querySelector('.row .btn').onclick=check;inp.onkeydown=e=>{if(e.key==='Enter')check();};
+    c.querySelector('[data-sol]').onclick=()=>{EX.state[key]={...st,v:inp.value,sol:!st.sol};exCol(k);};
+    G.append(c);
+  });
+  const set=exSet(k),ok=set.filter((_,i)=>(EX.state[exKey(k)+i]||{}).ok===true).length;
+  $('#sc-'+k).innerHTML=`Corretti: <b>${ok}</b>/${set.length}`;
+}
+function exRender(){
+  const B=EX.base,lab=B==='mix'?'Base N':B===2?'Binario':'Base '+B;
+  [...$('#exBases').children].forEach(t=>t.classList.toggle('pri',t.dataset.b===String(B)));
+  $('#hTo').innerHTML=`${lab} <span>→</span> decimale`;$('#hFrom').innerHTML=`Decimale <span>→</span> ${lab.toLowerCase().replace('base n','base N')}`;
+  $('#tabTo').textContent=`${lab} → decimale`;$('#tabFrom').textContent=`Decimale → ${B==='mix'?'base N':lab.toLowerCase()}`;
+  $('#exHint').innerHTML=B===16||B==='mix'?'In base 16: <b>A</b>=10 <b>B</b>=11 <b>C</b>=12 <b>D</b>=13 <b>E</b>=14 <b>F</b>=15':B===8?'Cifre da 0 a 7':B===5?'Cifre da 0 a 4':'Cifre 0 e 1';
+  exCol('b2d');exCol('d2b');
+}
+EXB.forEach(b=>{const t=el('button','btn',b==='mix'?'🔀 Miste':b===16?'16 (esadecimale)':b===8?'8 (ottale)':b===2?'2 (binario)':String(b));t.dataset.b=String(b);
+  t.onclick=()=>{EX.base=b;exRender();};$('#exBases').append(t);});
+document.querySelectorAll('[data-new]').forEach(b=>b.onclick=()=>{const k=b.dataset.new,key=exKey(k);
+  EX.sets[key]=exGen(k,EX.base);Object.keys(EX.state).forEach(x=>{if(x.startsWith(key))delete EX.state[x];});exCol(k);});
+document.querySelectorAll('.extabs [data-show]').forEach(b=>b.onclick=()=>{$('#exwrap').dataset.show=b.dataset.show;
+  document.querySelectorAll('.extabs [data-show]').forEach(x=>x.classList.toggle('pri',x===b));});
+
+/* ---------- NAVIGAZIONE ---------- */
+const slides=[...document.querySelectorAll('.slide')];let cur=0;
+const dots=$('#dots');
+slides.forEach((_,i)=>{const b=el('button');b.setAttribute('aria-label','Slide '+(i+1));b.onclick=()=>go(i);dots.append(b);});
+function go(i){
+  i=Math.max(0,Math.min(slides.length-1,i));
+  const old=slides[cur].dataset.r;if(i!==cur&&LEAVE[old])LEAVE[old]();
+  slides.forEach((s,k)=>{s.classList.toggle('active',k===i);s.classList.toggle('prev',k<i);});
+  [...dots.children].forEach((d,k)=>d.classList.toggle('on',k===i));
+  cur=i;$('#count').textContent=(i+1)+' / '+slides.length;$('#prog').style.width=((i+1)/slides.length*100)+'%';
+  slides[i].scrollTop=0;
+  try{history.replaceState(null,'','#'+(i+1));}catch(e){}
+  const r=slides[i].dataset.r;if(ENTER[r])ENTER[r]();
+}
+$('#prevB').onclick=()=>go(cur-1);$('#nextB').onclick=()=>go(cur+1);
+function fs(){if(!document.fullscreenElement)document.documentElement.requestFullscreen?.();else document.exitFullscreen?.();}
+$('#fsB').onclick=fs;
+document.addEventListener('click',e=>{const b=e.target.closest('button');if(b)b.blur();});
+const typing=e=>e.target.tagName==='INPUT'||e.target.isContentEditable;
+document.addEventListener('keydown',e=>{
+  if(typing(e))return;
+  if(['ArrowRight','PageDown',' '].includes(e.key)){e.preventDefault();go(cur+1);}
+  else if(['ArrowLeft','PageUp'].includes(e.key)){e.preventDefault();go(cur-1);}
+  else if(e.key==='Home')go(0);else if(e.key==='End')go(slides.length-1);
+  else if(e.key==='f'||e.key==='F')fs();
+});
+let tx=null,ty=null;
+document.addEventListener('touchstart',e=>{if(typing(e)){tx=null;return;}tx=e.touches[0].clientX;ty=e.touches[0].clientY;},{passive:true});
+document.addEventListener('touchend',e=>{if(tx===null)return;const dx=e.changedTouches[0].clientX-tx,dy=e.changedTouches[0].clientY-ty;
+  if(Math.abs(dx)>70&&Math.abs(dx)>Math.abs(dy)*1.5)go(cur+(dx<0?1:-1));tx=null;},{passive:true});
+
+b10Render();odRender();posRender();ixRender();blRender();exRender();
+document.querySelectorAll('.path li').forEach((li,i)=>li.style.transitionDelay=(.15+i*.1)+'s');
+go(Math.max(0,(parseInt(location.hash.slice(1))||1)-1));
+(function loop(t){const r=slides[cur].dataset.r;
+  if(r==='hero')heroFrame(t);else if(r==='basi')odFrame(t);else if(r==='bin')blFrame(t);
+  requestAnimationFrame(loop);})(performance.now());
+</script>
+</body>
+</html>
