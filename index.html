@@ -338,6 +338,65 @@ ul.key li b{color:var(--b);font-weight:600}
   .cell.ix{font-size:.75rem;padding:.1rem .35rem}
   .tbl .lbl{display:block}
 }
+
+/* ===== v3 ===== */
+.method{display:inline-flex;align-items:center;gap:.5rem;margin:-.6rem 0 1.3rem;padding:.4rem .95rem;border-radius:999px;font:600 clamp(.9rem,1.3vw,1.08rem) 'Space Grotesk'}
+.method.sp,.mtag.sp{background:#38d6ff1a;border:1px solid #38d6ff66;color:var(--a)}
+.method.ri,.mtag.ri{background:#ff6b9a1a;border:1px solid #ff6b9a66;color:var(--d)}
+.mtag{font:600 .72rem Inter;padding:.15rem .55rem;border-radius:999px;vertical-align:middle;margin-left:.35rem;white-space:nowrap}
+/* regole */
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:.8rem;width:100%}
+.rule{background:#0f1630;border:1px solid var(--line);border-radius:16px;padding:1rem .8rem;display:flex;flex-direction:column;align-items:center;gap:.75rem;text-align:center}
+.rule .big{font:700 clamp(1.5rem,2.6vw,2.3rem) var(--mono);color:var(--c)}
+.rule .big .nn,.ladder .nn{color:var(--b)}
+.rule .big sup,.ladder sup{font-size:.6em;color:var(--c)}
+.rule .rx{font:600 clamp(.95rem,1.4vw,1.15rem) var(--mono);color:var(--text);line-height:1.7}
+.rule .rx .z{color:var(--c)}
+.rule .note{font-size:.85rem;color:var(--muted);line-height:1.35}
+.rule .note b{color:var(--b)}
+.ladder{display:grid;grid-template-columns:auto auto auto auto;gap:.3rem .5rem;align-items:center;font:700 clamp(.95rem,1.4vw,1.15rem) var(--mono)}
+.ladder .m{color:var(--muted)}
+.ladder .lv{text-align:left}
+.ladder .lv.one{color:var(--c);padding:0 .45rem;border:2px solid var(--c);border-radius:9px}
+.ladder .ld{font:600 .75rem Inter;color:var(--muted);text-align:left}
+.rule .digset{max-width:260px}
+.rule .digset span{min-width:1.7rem;padding:.2rem .35rem;font-size:.9rem}
+/* quale metodo */
+.qzgrid{flex:1;min-height:0;overflow-y:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:.7rem;align-content:start;padding:2px}
+.qz{background:#1a2448;border:1px solid var(--line);border-radius:16px;padding:.8rem .9rem;display:flex;flex-direction:column;gap:.6rem;transition:.3s}
+.qz .q{font:700 clamp(1.05rem,1.7vw,1.35rem) var(--mono)}
+.qz .q .k{font:700 .75rem 'Space Grotesk';color:var(--muted);letter-spacing:.1em;margin-right:.4rem}
+.qz .opts{display:grid;grid-template-columns:1fr 1fr;gap:.4rem}
+.opt{border-radius:12px;padding:.5rem .4rem;font:600 .88rem 'Space Grotesk';cursor:pointer;background:#0f1630;border:1px solid #33437c;color:var(--muted);transition:.2s}
+.opt.sp:hover,.opt.sp.sel{border-color:var(--a);color:var(--a);background:#38d6ff1a}
+.opt.ri:hover,.opt.ri.sel{border-color:var(--d);color:var(--d);background:#ff6b9a1a}
+.qz .fb{font-size:.85rem;font-weight:600;min-height:1.2em;color:var(--muted)}
+.qz.ok{border-color:var(--c);background:#16304a}
+.qz.ok .fb{color:var(--c)}
+.qz.ko{border-color:var(--d)}
+.qz.ko .fb{color:var(--d)}
+.qzgrid::-webkit-scrollbar{width:8px}
+.qzgrid::-webkit-scrollbar-thumb{background:#33437c;border-radius:8px}
+@media (max-width:900px),(max-height:520px){
+  .qzgrid{flex:none;overflow:visible}
+  .method{margin:-.3rem 0 .9rem}
+}
+
+/* ===== v4: svolgimento ===== */
+.ans{color:var(--c)}
+.modal{position:fixed;inset:0;z-index:50;display:grid;place-items:center;background:#050914cc;backdrop-filter:blur(6px);padding:16px;animation:fade .25s}
+.modal[hidden]{display:none}
+@keyframes fade{from{opacity:0}}
+.mbox{width:min(1100px,100%);max-height:100%;overflow:auto;background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:22px;padding:1.1rem 1.2rem;display:flex;flex-direction:column;gap:.75rem;box-shadow:0 30px 80px -20px #000}
+.mhead{display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+.mtitle{font:700 clamp(1.3rem,2.6vw,2rem) var(--mono);flex:1}
+.mbox .method{margin:0}
+.mclose{flex:none;width:42px;height:42px;border-radius:50%;border:1px solid #33437c;background:#1f2b52;cursor:pointer;font-size:1.1rem}
+.mclose:hover{background:var(--d);color:#2b0010;border-color:var(--d)}
+.marea{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;padding:.8rem .2rem;min-height:clamp(220px,42vh,480px);overflow-x:auto}
+.qz .foot{display:flex;align-items:center;gap:.5rem}
+.qz .fb{flex:1}
+.qz .foot .btn,.ex .foot .btn{padding:.3rem .65rem;font-size:.8rem}
 </style>
 </head>
 <body>
@@ -375,30 +434,20 @@ ul.key li b{color:var(--b);font-weight:600}
       <ol class="path">
         <li class="done"><span class="dot">✓</span><div><div class="t">La base 10</div><div class="s">il sistema che usiamo ogni giorno</div></div><span class="tag">FATTO</span></li>
         <li class="done"><span class="dot">✓</span><div><div class="t">Altre basi</div><div class="s">non esiste solo il 10</div></div><span class="tag">FATTO</span></li>
-        <li class="now"><span class="dot">3</span><div><div class="t">Sistemi posizionali</div><div class="s">l'indice di posizione</div></div><span class="tag">OGGI</span></li>
-        <li class="now"><span class="dot">4</span><div><div class="t">Base 5 e base 8</div><div class="s">conversioni da e verso la base 10</div></div><span class="tag">OGGI</span></li>
+        <li class="now"><span class="dot">3</span><div><div class="t">Sistemi posizionali</div><div class="s">l'indice di posizione e le regole d'oro</div></div><span class="tag">OGGI</span></li>
+        <li class="now"><span class="dot">4</span><div><div class="t">Base 5 e base 8</div><div class="s">somme pesate e resti inversi</div></div><span class="tag">OGGI</span></li>
         <li class="now"><span class="dot">5</span><div><div class="t">Il binario: 0 e 1</div><div class="s">la lingua dei computer</div></div><span class="tag">OGGI</span></li>
         <li class="now"><span class="dot">6</span><div><div class="t">Conversioni in binario</div><div class="s">da e verso la base 10</div></div><span class="tag">OGGI</span></li>
-        <li class="next"><span class="dot">7</span><div><div class="t">Esercizi</div><div class="s">mettiamoci alla prova</div></div><span class="tag">ALLA FINE</span></li>
+        <li class="next"><span class="dot">7</span><div><div class="t">Esercizi</div><div class="s">quale metodo? poi le conversioni</div></div><span class="tag">ALLA FINE</span></li>
       </ol>
     </div>
   </div>
 </section>
 
-<!-- 3 · CERCHIO -->
-<section class="slide" data-r="circle">
-  <div>
-    <div class="num"><b>02</b> · <span contenteditable="true" spellcheck="false">INSIEME</span></div>
-    <h2 contenteditable="true" spellcheck="false">Proviamo<br><span>insieme</span></h2>
-    <p class="hint">Clic sul titolo per modificarlo</p>
-  </div>
-  <div class="circle-wrap"><div class="circle"></div></div>
-</section>
-
-<!-- 4 · BASE 10 -->
+<!-- 3 · BASE 10 -->
 <section class="slide" data-r="b10">
   <div>
-    <div class="num"><b>03</b> · RIPASSO</div>
+    <div class="num"><b>02</b> · RIPASSO</div>
     <h2>La <span>base 10</span></h2>
     <ul class="key">
       <li>Usiamo <b>10 cifre</b>: da 0 a 9</li>
@@ -418,37 +467,10 @@ ul.key li b{color:var(--b);font-weight:600}
   </div>
 </section>
 
-<!-- 5 · ALTRE BASI -->
-<section class="slide" data-r="basi">
-  <div>
-    <div class="num"><b>04</b> · RIPASSO</div>
-    <h2>Non solo<br>la <span>base 10</span></h2>
-    <ul class="key">
-      <li>La <b>base</b> = quante cifre usiamo</li>
-      <li>Finite le cifre, si passa alla <b>posizione dopo</b></li>
-      <li>Base 2 → solo <b>0 e 1</b></li>
-      <li>Base 16 → servono anche le <b>lettere</b></li>
-    </ul>
-  </div>
-  <div class="stage">
-    <div class="btabs" id="btabs"></div>
-    <div class="area">
-      <div class="digset" id="digset"></div>
-      <div class="odo" id="odo"></div>
-      <div class="eqdec" id="eqdec"></div>
-    </div>
-    <div class="controls">
-      <button class="btn pri" id="odoPlay">⏸ Pausa</button>
-      <button class="btn" id="odoStep">+1</button>
-      <button class="btn" id="odoReset">↺ Da zero</button>
-    </div>
-  </div>
-</section>
-
-<!-- 6 · POSIZIONALI E NON -->
+<!-- 4 · POSIZIONALI E NON -->
 <section class="slide wide" data-r="pos">
   <div>
-    <div class="num"><b>05</b> · SISTEMI DI NUMERAZIONE</div>
+    <div class="num"><b>03</b> · SISTEMI DI NUMERAZIONE</div>
     <h2>Posizionali<br>e <span>non</span></h2>
     <ul class="key">
       <li><b>Non posizionale</b>: un simbolo vale sempre uguale</li>
@@ -472,10 +494,27 @@ ul.key li b{color:var(--b);font-weight:600}
   </div>
 </section>
 
-<!-- 7 · INDICE DI POSIZIONE -->
+<!-- 5 · REGOLE -->
+<section class="slide wide" data-r="rules">
+  <div>
+    <div class="num"><b>04</b> · DA RICORDARE</div>
+    <h2>Tre regole<br><span>d'oro</span></h2>
+    <ul class="key">
+      <li>Qualsiasi numero <b>× 0 = 0</b></li>
+      <li>Qualsiasi numero <b>elevato alla 0 = 1</b></li>
+      <li>In base <b>N</b> le cifre vanno solo da <b>0 a N−1</b></li>
+    </ul>
+  </div>
+  <div class="stage">
+    <div class="controls"><span class="hint">Prova con N =</span><div class="tabsmall" id="ruTabs"></div><button class="btn" id="ruRnd">🎲</button></div>
+    <div class="area"><div class="rules" id="rules"></div></div>
+  </div>
+</section>
+
+<!-- 6 · INDICE DI POSIZIONE -->
 <section class="slide wide" data-r="idx">
   <div>
-    <div class="num"><b>06</b> · LA REGOLA</div>
+    <div class="num"><b>05</b> · LA REGOLA</div>
     <h2>L'indice di<br><span>posizione</span></h2>
     <ul class="key">
       <li>Ogni cifra ha un <b>indice</b></li>
@@ -499,11 +538,39 @@ ul.key li b{color:var(--b);font-weight:600}
   </div>
 </section>
 
+<!-- 7 · ALTRE BASI -->
+<section class="slide" data-r="basi">
+  <div>
+    <div class="num"><b>06</b> · RIPASSO</div>
+    <h2>Non solo<br>la <span>base 10</span></h2>
+    <ul class="key">
+      <li>La <b>base</b> = quante cifre usiamo</li>
+      <li>Finite le cifre, si passa alla <b>posizione dopo</b></li>
+      <li>Base 2 → solo <b>0 e 1</b></li>
+      <li>Base 16 → servono anche le <b>lettere</b></li>
+    </ul>
+  </div>
+  <div class="stage">
+    <div class="btabs" id="btabs"></div>
+    <div class="area">
+      <div class="digset" id="digset"></div>
+      <div class="odo" id="odo"></div>
+      <div class="eqdec" id="eqdec"></div>
+    </div>
+    <div class="controls">
+      <button class="btn pri" id="odoPlay">⏸ Pausa</button>
+      <button class="btn" id="odoStep">+1</button>
+      <button class="btn" id="odoReset">↺ Da zero</button>
+    </div>
+  </div>
+</section>
+
 <!-- 8 · BASE 5/8 -> DEC -->
 <section class="slide wide" data-r="td58">
   <div>
     <div class="num"><b>07</b> · CONVERSIONE</div>
     <h2>Da base 5 e 8<br>a <span>base 10</span></h2>
+    <div class="method sp">Σ Metodo delle somme pesate</div>
     <ul class="key">
       <li>Scrivi l'<b>indice</b> sotto ogni cifra</li>
       <li>Calcola <b>base<sup>indice</sup></b></li>
@@ -535,6 +602,7 @@ ul.key li b{color:var(--b);font-weight:600}
   <div>
     <div class="num"><b>08</b> · CONVERSIONE</div>
     <h2>Da base 10<br>a <span>base 5 e 8</span></h2>
+    <div class="method ri">↺ Metodo dei resti inversi</div>
     <ul class="key">
       <li><b>Dividi per la base</b> (5 o 8)</li>
       <li>Scrivi il <b>resto</b></li>
@@ -564,11 +632,39 @@ ul.key li b{color:var(--b);font-weight:600}
   </div>
 </section>
 
+<!-- 10 · BINARIO -->
+<section class="slide wide" data-r="bin">
+  <div>
+    <div class="num"><b>09</b> · IL BINARIO</div>
+    <h2>Solo <span>0</span><br>e <span>1</span></h2>
+    <ul class="key">
+      <li><b>Bit</b> = cifra binaria</li>
+      <li>Come una lampadina: <b>spenta 0</b>, <b>accesa 1</b></li>
+      <li>I pesi sono <b>2<sup>indice</sup></b>: raddoppiano</li>
+      <li>8 bit = 1 <b>byte</b></li>
+    </ul>
+  </div>
+  <div class="stage">
+    <div class="area">
+      <div class="bulbs" id="bulbs"></div>
+      <div class="sumline" id="bSum"></div>
+      <div class="bigval" id="bVal"></div>
+    </div>
+    <div class="controls">
+      <button class="btn pri" id="bPlus">+1</button>
+      <button class="btn" id="bAuto">▶ Conta da solo</button>
+      <button class="btn" id="bZero">↺ Spegni tutto</button>
+      <span class="hint">Tocca le lampadine!</span>
+    </div>
+  </div>
+</section>
+
 <!-- 11 · BIN -> DEC -->
 <section class="slide wide" data-r="td2">
   <div>
-    <div class="num"><b>09</b> · CONVERSIONE</div>
+    <div class="num"><b>10</b> · CONVERSIONE</div>
     <h2>Da binario<br>a <span>decimale</span></h2>
+    <div class="method sp">Σ Metodo delle somme pesate</div>
     <ul class="key">
       <li>Stessa regola: <b>cifra × 2<sup>indice</sup></b></li>
       <li>Sotto gli <b>0</b> il valore è 0</li>
@@ -593,38 +689,12 @@ ul.key li b{color:var(--b);font-weight:600}
   </div>
 </section>
 
-<!-- 10 · BINARIO -->
-<section class="slide wide" data-r="bin">
-  <div>
-    <div class="num"><b>10</b> · IL BINARIO</div>
-    <h2>Solo <span>0</span><br>e <span>1</span></h2>
-    <ul class="key">
-      <li><b>Bit</b> = cifra binaria</li>
-      <li>Come una lampadina: <b>spenta 0</b>, <b>accesa 1</b></li>
-      <li>I pesi sono <b>2<sup>indice</sup></b>: raddoppiano</li>
-      <li>8 bit = 1 <b>byte</b></li>
-    </ul>
-  </div>
-  <div class="stage">
-    <div class="area">
-      <div class="bulbs" id="bulbs"></div>
-      <div class="sumline" id="bSum"></div>
-      <div class="bigval" id="bVal"></div>
-    </div>
-    <div class="controls">
-      <button class="btn pri" id="bPlus">+1</button>
-      <button class="btn" id="bAuto">▶ Conta da solo</button>
-      <button class="btn" id="bZero">↺ Spegni tutto</button>
-      <span class="hint">Tocca le lampadine!</span>
-    </div>
-  </div>
-</section>
-
 <!-- 12 · DEC -> BIN -->
 <section class="slide wide" data-r="fd2">
   <div>
     <div class="num"><b>11</b> · CONVERSIONE</div>
     <h2>Da decimale<br>a <span>binario</span></h2>
+    <div class="method ri">↺ Metodo dei resti inversi</div>
     <ul class="key">
       <li><b>Dividi per 2</b></li>
       <li>Il <b>resto</b> è sempre 0 o 1</li>
@@ -653,17 +723,36 @@ ul.key li b{color:var(--b);font-weight:600}
   </div>
 </section>
 
-<!-- 13 · ESERCIZI -->
+<!-- 13 · QUALE METODO -->
+<section class="slide full" data-r="quiz">
+  <div class="head">
+    <div>
+      <div class="num"><b>12</b> · ALLENAMENTO</div>
+      <h2>Quale <span>metodo</span>?</h2>
+    </div>
+    <ul class="key">
+      <li>Guarda la base di <b>partenza</b> e di <b>arrivo</b></li>
+      <li>Scegli il <b>metodo</b> giusto</li>
+      <li>Non serve fare il <b>calcolo</b>!</li>
+    </ul>
+  </div>
+  <div class="stage">
+    <div class="controls"><span class="score" id="qzScore"></span><span class="spacer"></span><button class="btn" id="qzNew">🎲 Nuove</button></div>
+    <div class="qzgrid" id="qzGrid"></div>
+  </div>
+</section>
+
+<!-- 14 · ESERCIZI -->
 <section class="slide full" data-r="ex">
   <div class="head">
     <div>
-      <div class="num"><b>12</b> · ESERCIZI</div>
+      <div class="num"><b>13</b> · ESERCIZI</div>
       <h2>Tocca a <span>voi</span>!</h2>
     </div>
     <ul class="key">
       <li>Scegli la <b>base</b></li>
       <li>Scrivi la risposta e premi <b>Invio</b></li>
-      <li>Bloccati? Guarda la <b>soluzione</b></li>
+      <li>Bloccati? <b>Soluzione</b> o <b>svolgimento</b></li>
     </ul>
   </div>
   <div class="stage">
@@ -698,6 +787,23 @@ ul.key li b{color:var(--b);font-weight:600}
   <button class="arr" id="nextB" aria-label="Avanti">→</button>
   <button class="arr" id="fsB" aria-label="Schermo intero">⛶</button>
 </nav>
+
+<div class="modal" id="mod" hidden>
+  <div class="mbox" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+    <div class="mhead"><div class="mtitle" id="mTitle"></div><div id="mMethod"></div><button class="mclose" id="mClose" aria-label="Chiudi">✕</button></div>
+    <div class="steps" id="mSteps"></div>
+    <div class="cap" id="mCap"></div>
+    <div class="marea" id="mArea"></div>
+    <div class="controls">
+      <button class="btn" id="mStart">↺ Dall'inizio</button>
+      <button class="btn" id="mPrev">◀</button>
+      <button class="btn pri" id="mNext">Avanti ▶</button>
+      <button class="btn" id="mAll">Tutto</button>
+      <span class="spacer"></span>
+      <span class="hint">Esc per chiudere</span>
+    </div>
+  </div>
+</div>
 
 <script>
 const $=s=>document.querySelector(s);
@@ -923,14 +1029,15 @@ function exCol(k){
     const key=exKey(k)+i,st=EX.state[key]||{};
     const q=isTo?toS(n,b):String(n),ans=isTo?String(n):toS(n,b);
     const c=el('div','ex'+(st.ok===true?' ok':st.ok===false?' ko':''));
-    c.innerHTML=`<div class="q"><span class="k">${i+1}.</span>${nb(q,isTo?b:10)} = ${nb('?',isTo?10:b)}</div>
+    c.innerHTML=`<div class="q"><span class="k">${i+1}.</span>${nb(q,isTo?b:10)} = ${nb(st.sol?`<span class="ans">${ans}</span>`:'?',isTo?10:b)}</div>
       <div class="row"><input class="inp" ${b===16&&!isTo?'autocapitalize="characters"':'inputmode="numeric"'} placeholder="in base ${isTo?10:b}" aria-label="Risposta esercizio ${i+1}"><button class="btn">✓</button></div>
-      <div class="foot"><span class="fb">${st.ok===true?'✓ Corretto!':st.ok===false?'✗ Riprova':''}</span><button class="btn" data-sol>${st.sol?'Nascondi':'👁 Soluzione'}</button></div>
-      ${st.sol?`<div class="sol">${isTo?exSolTo(q,b):exSolFrom(n,b)}</div>`:''}`;
+      <div class="fb">${st.ok===true?'✓ Corretto!':st.ok===false?'✗ Riprova':''}</div>
+      <div class="foot"><button class="btn" data-sol>${st.sol?'🙈 Nascondi':'👁 Soluzione'}</button><button class="btn" data-how>🔍 Svolgimento</button></div>`;
     const inp=c.querySelector('.inp');inp.value=st.v||'';
     const check=()=>{const v=inp.value.trim().toUpperCase().replace(/^0+(?=.)/,'');const ok=v===ans;EX.state[key]={...st,v:inp.value,ok};exCol(k);
       const ni=$('#g-'+k).children[i+1];if(ok&&ni)ni.querySelector('.inp').focus();};
     c.querySelector('.row .btn').onclick=check;inp.onkeydown=e=>{if(e.key==='Enter')check();};
+    c.querySelector('[data-how]').onclick=()=>openSolve(isTo?'sp':'ri',b,n);
     c.querySelector('[data-sol]').onclick=()=>{EX.state[key]={...st,v:inp.value,sol:!st.sol};exCol(k);};
     G.append(c);
   });
@@ -940,7 +1047,7 @@ function exCol(k){
 function exRender(){
   const B=EX.base,lab=B==='mix'?'Base N':B===2?'Binario':'Base '+B;
   [...$('#exBases').children].forEach(t=>t.classList.toggle('pri',t.dataset.b===String(B)));
-  $('#hTo').innerHTML=`${lab} <span>→</span> decimale`;$('#hFrom').innerHTML=`Decimale <span>→</span> ${lab.toLowerCase().replace('base n','base N')}`;
+  $('#hTo').innerHTML=`${lab} <span>→</span> decimale <small class="mtag sp">somme pesate</small>`;$('#hFrom').innerHTML=`Decimale <span>→</span> ${lab.toLowerCase().replace('base n','base N')} <small class="mtag ri">resti inversi</small>`;
   $('#tabTo').textContent=`${lab} → decimale`;$('#tabFrom').textContent=`Decimale → ${B==='mix'?'base N':lab.toLowerCase()}`;
   $('#exHint').innerHTML=B===16||B==='mix'?'In base 16: <b>A</b>=10 <b>B</b>=11 <b>C</b>=12 <b>D</b>=13 <b>E</b>=14 <b>F</b>=15':B===8?'Cifre da 0 a 7':B===5?'Cifre da 0 a 4':'Cifre 0 e 1';
   exCol('b2d');exCol('d2b');
@@ -951,6 +1058,106 @@ document.querySelectorAll('[data-new]').forEach(b=>b.onclick=()=>{const k=b.data
   EX.sets[key]=exGen(k,EX.base);Object.keys(EX.state).forEach(x=>{if(x.startsWith(key))delete EX.state[x];});exCol(k);});
 document.querySelectorAll('.extabs [data-show]').forEach(b=>b.onclick=()=>{$('#exwrap').dataset.show=b.dataset.show;
   document.querySelectorAll('.extabs [data-show]').forEach(x=>x.classList.toggle('pri',x===b));});
+
+/* ---------- REGOLE D'ORO ---------- */
+const RU={n:5};
+[2,5,8,10,16].forEach(b=>{const t=el('button','btn',String(b));t.dataset.b=b;t.onclick=()=>{RU.n=b;ruRender();};$('#ruTabs').append(t);});
+$('#ruRnd').onclick=()=>{let x;do x=rnd(2,16);while(x===RU.n);RU.n=x;ruRender();};
+function ruRender(){
+  const N=RU.n,f=v=>v.toLocaleString('it-IT'),nn='<span class="nn">N</span>',c=`<span class="nn">${N}</span>`;
+  [...$('#ruTabs').children].forEach(t=>t.classList.toggle('pri',+t.dataset.b===N));
+  const lad=[3,2,1,0].map(e=>`<span>${c}<sup>${e}</sup></span><span class="m">=</span><span class="lv${e?'':' one'}">${f(N**e)}</span><span class="ld">${e?'↓ : '+N:''}</span>`).join('');
+  const last=DIG[N-1];
+  $('#rules').innerHTML=`
+   <div class="rule"><div class="big">${nn} × 0 = 0</div>
+     <div class="rx">${c} × 0 = <span class="z">0</span><br>0 × ${c}<sup>2</sup> = 0 × ${f(N*N)} = <span class="z">0</span></div>
+     <div class="note">Una cifra <b>0</b> non aggiunge niente alla somma</div></div>
+   <div class="rule"><div class="big">${nn}<sup>0</sup> = 1</div>
+     <div class="ladder">${lad}</div>
+     <div class="note">A ogni passo dividi per <b>${N}</b>: alla fine resta sempre <b>1</b></div></div>
+   <div class="rule"><div class="big">0 … ${nn}−1</div>
+     <div class="digset">${[...DIG].map((ch,i)=>`<span class="${i<N?'hl':'off'}">${ch}</span>`).join('')}</div>
+     <div class="note">Base ${N}: <b>${N}</b> cifre, da <b>0</b> a <b>${last}</b>${N>10?' (= '+(N-1)+')':''}.<br>${N<16?`La cifra <b>${DIG[N]}</b> in base ${N} non esiste!`:'Dopo il 9 si usano le lettere <b>A–F</b>'}</div></div>`;
+}
+ENTER.rules=ruRender;
+
+/* ---------- QUALE METODO? ---------- */
+const QZ={items:[],st:[],sol:[]},QB=[2,3,4,5,6,7,8,9,16],MN={sp:'Somme pesate',ri:'Resti inversi'};
+function qzItem(m){const b=QB[rnd(0,QB.length-1)];
+  if(m==='ri')return{f:10,t:b,s:String(rnd(20,500)),m};
+  const n=rnd(b*b,Math.min(b**4-1,b===2?255:2000));return{f:b,t:10,s:toS(n,b),m};}   // cifre sempre da 0 a b-1
+function qzGen(first){
+  const it=first?[{f:10,t:2,s:'346',m:'ri'},{f:6,t:10,s:'312',m:'sp'}]:[],seen=new Set(it.map(x=>x.f+'|'+x.t+'|'+x.s)),want={sp:4,ri:4};
+  it.forEach(x=>want[x.m]--);
+  for(const m of ['sp','ri'])while(want[m]>0){const x=qzItem(m),k=x.f+'|'+x.t+'|'+x.s;if(!seen.has(k)){seen.add(k);it.push(x);want[m]--;}}
+  if(!first)for(let i=it.length-1;i>0;i--){const j=rnd(0,i);[it[i],it[j]]=[it[j],it[i]];}
+  else{const rest=it.splice(2);for(let i=rest.length-1;i>0;i--){const j=rnd(0,i);[rest[i],rest[j]]=[rest[j],rest[i]];}it.push(...rest);}
+  QZ.items=it;QZ.st=it.map(()=>null);QZ.sol=it.map(()=>false);
+}
+function qzRender(){
+  const G=$('#qzGrid');G.innerHTML='';
+  QZ.items.forEach((x,i)=>{const a=QZ.st[i],why=x.m==='sp'?'si arriva in base 10 → somme pesate':'si parte dalla base 10 → resti inversi';
+    const c=el('div','qz'+(a?(a===x.m?' ok':' ko'):''));
+    const b=x.m==='sp'?x.f:x.t,v=x.m==='sp'?parseInt(x.s,x.f):+x.s,ans=x.m==='sp'?String(v):toS(v,b);
+    c.innerHTML=`<div class="q"><span class="k">${i+1}.</span>${nb(x.s,x.f)} = ${nb(QZ.sol[i]?`<span class="ans">${ans}</span>`:'&nbsp;&nbsp;?&nbsp;&nbsp;',x.t)}</div>
+      <div class="opts">${['sp','ri'].map(m=>`<button class="opt ${m}${a===m?' sel':''}" data-m="${m}">${m==='sp'?'Σ':'↺'} ${MN[m]}</button>`).join('')}</div>
+      <div class="foot"><span class="fb">${a?(a===x.m?'✓ Giusto! ':'✗ No: ')+why:''}</span><button class="btn" data-solve>🔍 Risolvi</button></div>`;
+    c.querySelector('[data-solve]').onclick=()=>{QZ.sol[i]=true;qzRender();openSolve(x.m,b,v);};
+    c.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{QZ.st[i]=b.dataset.m;qzRender();});
+    G.append(c);});
+  const ok=QZ.st.filter((a,i)=>a===QZ.items[i].m).length;
+  $('#qzScore').innerHTML=`Corretti: <b>${ok}</b>/${QZ.items.length}`;
+}
+$('#qzNew').onclick=()=>{qzGen(false);qzRender();};
+qzGen(true);
+
+/* ---------- SVOLGIMENTO (finestra) ---------- */
+const MOD={m:'sp',b:2,n:0,s:'',step:0,max:4,rows:[]};
+function openSolve(m,b,n){
+  Object.assign(MOD,{m,b,n,s:toS(n,b),rows:[]});
+  if(m==='ri'){let x=n;do{MOD.rows.push([x,Math.floor(x/b),x%b]);x=Math.floor(x/b);}while(x>0);MOD.max=MOD.rows.length+1;}
+  else MOD.max=4;
+  MOD.step=MOD.max;
+  $('#mSteps').innerHTML='<span></span>'.repeat(MOD.max+1);
+  $('#mMethod').innerHTML=m==='sp'?'<div class="method sp">Σ Metodo delle somme pesate</div>':'<div class="method ri">↺ Metodo dei resti inversi</div>';
+  $('#mod').hidden=false;modRender();
+}
+function closeSolve(){$('#mod').hidden=true;}
+function modRender(){
+  const {m,b,n,s,step:st,max}=MOD,A=$('#mArea'),done=st===max,h=x=>x?'':' hide';
+  A.innerHTML='';
+  if(m==='sp'){
+    const L=s.length,T=el('div','tbl');T.style.gridTemplateColumns=`auto repeat(${L},auto)`;
+    T.append(el('div','lbl','cifra'));[...s].forEach(ch=>T.append(el('div','cell bitc',ch)));
+    T.append(el('div','lbl'+h(st>=1),'indice'));[...s].forEach((ch,i)=>T.append(el('div','cell ix'+h(st>=1),L-1-i)));
+    T.append(el('div','lbl'+h(st>=2),'potenza'));
+    [...s].forEach((ch,i)=>{const e=L-1-i;T.append(el('div','cell two wc'+h(st>=2),`<span class="pw"><span class="fb">${b}</span><sup class="fi">${e}</sup></span><span class="pv">${b**e}</span>`));});
+    T.append(el('div','lbl'+h(st>=3),'cifra × pot.'));
+    [...s].forEach((ch,i)=>{const e=L-1-i,d=parseInt(ch,b);T.append(el('div','cell two pc '+(d?'one':'zero')+h(st>=3),`<span class="pw">${ch}${d>9?'('+d+')':''}×${b**e}</span><span class="pv">${d*b**e}</span>`));});
+    const terms=[...s].map((ch,i)=>parseInt(ch,b)*b**(L-1-i)).filter(x=>x);
+    A.append(T,el('div','result'+h(done),`${terms.join(' + ')||'0'} = <span class="eq">${n}</span><br><span style="font-size:.8em;color:var(--muted)">${nb(s,b)} = ${nb(n,10)}</span>`));
+    $('#mTitle').innerHTML=`${nb(s,b)} = ${nb(done?`<span class="ans">${n}</span>`:'?',10)}`;
+    $('#mCap').innerHTML=[`Scriviamo il numero in <b>base ${b}</b>`,`Sotto ogni cifra il suo <b>indice</b>: da destra, partendo da 0`,
+      `Calcoliamo le potenze: <b>${b}<sup>indice</sup></b>`,`Moltiplichiamo: <b>cifra × ${b}<sup>indice</sup></b>`,`<b>Sommiamo</b> tutto: ecco il numero in base 10`][st];
+  }else{
+    const k=MOD.rows.length,W=el('div','divwrap'),D=el('div','divs'),Ar=el('div','arrowup'+(done?' show':''),'<span>LEGGI COSÌ</span>');
+    MOD.rows.forEach(([x,q,r],i)=>{const sh=i<st?' show':'';
+      D.append(el('div','r n'+sh,x),el('div','r op'+sh,`: ${b} =`),el('div','r q'+sh,q),el('div','r rem'+sh,r>9?`${r} = ${DIG[r]}`:r));});
+    W.append(D,Ar);
+    A.append(W,el('div','result'+h(done),`${nb(n,10)} = <span class="eq">${nb(s,b)}</span>`));
+    $('#mTitle').innerHTML=`${nb(n,10)} = ${nb(done?`<span class="ans">${s}</span>`:'?',b)}`;
+    $('#mCap').innerHTML=st===0?`Convertiamo <b>${n}</b> in base ${b}`:st<k?`Dividiamo per <b>${b}</b> e scriviamo il <b>resto</b>…`:
+      !done?`Siamo arrivati a <b>0</b>: ci fermiamo!`:`Leggiamo i resti <b>dal basso verso l'alto</b>`+(b===16?' (10=A … 15=F)':'');
+  }
+  document.querySelectorAll('#mSteps span').forEach((e,i)=>e.classList.toggle('on',i<=st));
+  $('#mPrev').disabled=st===0;$('#mStart').disabled=st===0;$('#mNext').disabled=done;$('#mAll').disabled=done;
+}
+$('#mPrev').onclick=()=>{MOD.step=Math.max(0,MOD.step-1);modRender();};
+$('#mNext').onclick=()=>{MOD.step=Math.min(MOD.max,MOD.step+1);modRender();};
+$('#mAll').onclick=()=>{MOD.step=MOD.max;modRender();};
+$('#mStart').onclick=()=>{MOD.step=0;modRender();};
+$('#mClose').onclick=closeSolve;
+$('#mod').onclick=e=>{if(e.target===e.currentTarget)closeSolve();};
 
 /* ---------- NAVIGAZIONE ---------- */
 const slides=[...document.querySelectorAll('.slide')];let cur=0;
@@ -972,6 +1179,11 @@ $('#fsB').onclick=fs;
 document.addEventListener('click',e=>{const b=e.target.closest('button');if(b)b.blur();});
 const typing=e=>e.target.tagName==='INPUT'||e.target.isContentEditable;
 document.addEventListener('keydown',e=>{
+  if(!$('#mod').hidden){
+    if(e.key==='Escape')closeSolve();
+    else if(['ArrowRight','PageDown',' '].includes(e.key)){e.preventDefault();$('#mNext').click();}
+    else if(['ArrowLeft','PageUp'].includes(e.key)){e.preventDefault();$('#mPrev').click();}
+    return;}
   if(typing(e))return;
   if(['ArrowRight','PageDown',' '].includes(e.key)){e.preventDefault();go(cur+1);}
   else if(['ArrowLeft','PageUp'].includes(e.key)){e.preventDefault();go(cur-1);}
@@ -979,11 +1191,11 @@ document.addEventListener('keydown',e=>{
   else if(e.key==='f'||e.key==='F')fs();
 });
 let tx=null,ty=null;
-document.addEventListener('touchstart',e=>{if(typing(e)){tx=null;return;}tx=e.touches[0].clientX;ty=e.touches[0].clientY;},{passive:true});
+document.addEventListener('touchstart',e=>{if(typing(e)||!$('#mod').hidden){tx=null;return;}tx=e.touches[0].clientX;ty=e.touches[0].clientY;},{passive:true});
 document.addEventListener('touchend',e=>{if(tx===null)return;const dx=e.changedTouches[0].clientX-tx,dy=e.changedTouches[0].clientY-ty;
   if(Math.abs(dx)>70&&Math.abs(dx)>Math.abs(dy)*1.5)go(cur+(dx<0?1:-1));tx=null;},{passive:true});
 
-b10Render();odRender();posRender();ixRender();blRender();exRender();
+b10Render();odRender();posRender();ruRender();ixRender();blRender();exRender();qzRender();
 document.querySelectorAll('.path li').forEach((li,i)=>li.style.transitionDelay=(.15+i*.1)+'s');
 go(Math.max(0,(parseInt(location.hash.slice(1))||1)-1));
 (function loop(t){const r=slides[cur].dataset.r;
